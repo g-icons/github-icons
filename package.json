@@ -1,0 +1,28 @@
+{
+  "name": "chrome-github-icons",
+  "description": "Cross-browser extension that replaces GitHub file icons with Material Design icons.",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "sync:assets": "tsx scripts/copy-icons.ts",
+    "dev": "npm run sync:assets && wxt",
+    "dev:firefox": "npm run sync:assets && wxt -b firefox",
+    "build": "npm run sync:assets && wxt build",
+    "build:firefox": "npm run sync:assets && wxt build -b firefox",
+    "build:safari": "npm run sync:assets && wxt build -b safari",
+    "zip": "npm run sync:assets && wxt zip",
+    "zip:firefox": "npm run sync:assets && wxt zip -b firefox",
+    "compile": "tsc --noEmit",
+    "postinstall": "npm run sync:assets && wxt prepare"
+  },
+  "dependencies": {
+    "material-icon-theme": "^5.32.0",
+    "selector-observer": "^2.1.6"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "wxt": "^0.20.18"
+  }
+}
