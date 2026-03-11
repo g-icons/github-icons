@@ -4,6 +4,7 @@ on:
   pull_request:
     types: [closed]
     branches: [master]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -15,9 +16,11 @@ env:
 jobs:
   release:
     if: >
-      github.event.pull_request.merged == true &&
-      !contains(toJson(github.event.pull_request.labels), '"no-release"') &&
-      !contains(github.event.pull_request.title, '[no-release]')
+      github.event_name == 'workflow_dispatch' || (
+        github.event.pull_request.merged == true &&
+        !contains(toJson(github.event.pull_request.labels), '"no-release"') &&
+        !contains(github.event.pull_request.title, '[no-release]')
+      )
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +60,7 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}-pr${{ github.event.pull_request.number }}
-          name: Auto release for PR #${{ github.event.pull_request.number }}
+          tag_name: v${{ steps.version.outputs.version }}-${{ github.event.pull_request.number && format('pr{0}', github.event.pull_request.number) || format('run{0}', github.run_number) }}
+          name: ${{ github.event.pull_request.number && format('Auto release for PR #{0}', github.event.pull_request.number) || format('Release v{0}', steps.version.outputs.version) }}
           generate_release_notes: true
           files: output/*.zip
