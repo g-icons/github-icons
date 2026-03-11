@@ -1,6 +1,7 @@
 import { defineConfig } from 'wxt';
 
 export default defineConfig({
+  outDir: 'output',
   manifest: {
     name: 'GitHub Material Icons',
     description:
@@ -12,7 +13,7 @@ export default defineConfig({
     },
     web_accessible_resources: [
       {
-        resources: ['icons/*'],
+        resources: ['icons/*', 'manifests/*'],
         matches: ['https://github.com/*'],
       },
     ],

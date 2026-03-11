@@ -22,5 +22,5 @@ export interface ThemeProvider {
   resolveIcon(query: IconQuery): ResolvedIcon | null;
   getAvailableIconPacks(): readonly ThemePackId[];
   getActiveIconPack(): ThemePackId;
-  setIconPack(pack: ThemePackId): void;
+  setIconPack(pack: ThemePackId): Promise<void>;
 }

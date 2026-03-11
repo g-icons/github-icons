@@ -105,9 +105,10 @@ dist
 **/.vitepress/cache
 
 # WXT build artifacts
-.output/
+output/
 .wxt/
 public/icons/
+public/manifests/
 src/generated/*.ts
 
 # Docusaurus cache and generated files
@@ -143,3 +144,9 @@ src/generated/*.ts
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+tmp
+
+.claude
+.vscode
+.output

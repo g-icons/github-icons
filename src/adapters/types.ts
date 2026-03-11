@@ -3,6 +3,7 @@ import type { FileEntryType } from '../icon-engine/types';
 export interface FileEntry {
   element: Element;
   filename: string;
+  path: string;
   type: FileEntryType;
   iconElement: SVGElement;
   isOpen?: boolean;

@@ -3,6 +3,7 @@ import { observe } from 'selector-observer';
 import type { FileEntry, SiteAdapter } from '../types';
 import { isGitHubLocation } from './detector';
 import {
+  extractEntryPath,
   extractFilename,
   findEntryContainer,
   findFilenameElement,
@@ -42,6 +43,11 @@ export class GitHubAdapter implements SiteAdapter {
   }
 
   observeFileEntries(callback: (entries: FileEntry[]) => void): () => void {
+    const entries = this.collectEntries();
+    if (entries.length > 0) {
+      callback(entries);
+    }
+
     const observer = observe(GITHUB_ICON_SELECTOR, {
       constructor: SVGElement,
       add: (iconElement) => {
@@ -59,8 +65,11 @@ export class GitHubAdapter implements SiteAdapter {
     const originalIcon = entry.iconElement;
     const existingReplacement = this.findReplacementImage(originalIcon);
 
-    originalIcon.setAttribute(ORIGINAL_ICON_ATTR, 'true');
-    originalIcon.setAttribute(ORIGINAL_DISPLAY_ATTR, originalIcon.style.display);
+    if (!originalIcon.hasAttribute(ORIGINAL_ICON_ATTR)) {
+      originalIcon.setAttribute(ORIGINAL_ICON_ATTR, 'true');
+      originalIcon.setAttribute(ORIGINAL_DISPLAY_ATTR, originalIcon.style.display);
+    }
+
     originalIcon.style.display = 'none';
 
     if (existingReplacement) {
@@ -98,18 +107,31 @@ export class GitHubAdapter implements SiteAdapter {
       return null;
     }
 
-    const filename = extractFilename(filenameElement);
-    if (!filename) {
+    const filename = extractFilename(filenameElement) ?? '';
+    const path = extractEntryPath(filenameElement, filename);
+    const resolvedFilename =
+      filename ||
+      path.split('/').filter(Boolean).at(-1) ||
+      path;
+
+    if (!resolvedFilename || !path) {
       return null;
     }
 
     return {
       element: container,
-      filename,
+      filename: resolvedFilename,
+      path,
       type: getEntryTypeFromIcon(iconElement),
       iconElement,
       isOpen: isOpenFolderIcon(iconElement),
     };
+  }
+
+  private collectEntries(): FileEntry[] {
+    return Array.from(document.querySelectorAll<SVGElement>(GITHUB_ICON_SELECTOR))
+      .map((iconElement) => this.createEntry(iconElement))
+      .filter((entry): entry is FileEntry => entry !== null);
   }
 
   private createReplacementImage(

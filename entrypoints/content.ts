@@ -1,7 +1,7 @@
 import { detectSiteAdapter } from '../src/adapters/registry';
 import type { FileEntry, SiteAdapter } from '../src/adapters/types';
 import { createThemeProvider } from '../src/icon-engine/theme-registry';
-import type { ThemeProvider } from '../src/icon-engine/types';
+import type { ThemePackId, ThemeProvider } from '../src/icon-engine/types';
 import {
   activeIconPack,
   extensionEnabled,
@@ -26,7 +26,7 @@ class ContentOrchestrator {
     }
 
     const settings = await getExtensionSettings();
-    this.themeProvider.setIconPack(settings.iconPack);
+    await this.themeProvider.setIconPack(settings.iconPack);
 
     if (settings.enabled) {
       this.enable();
@@ -47,15 +47,22 @@ class ContentOrchestrator {
     });
 
     activeIconPack.watch((iconPack) => {
-      this.themeProvider.setIconPack(iconPack);
-      if (this.stopObserving) {
-        this.restart();
-      }
+      void this.applyIconPack(iconPack);
     });
 
     document.addEventListener(
       'turbo:before-cache',
       () => this.adapter?.restoreIcons(),
+      { capture: true },
+    );
+
+    document.addEventListener(
+      'turbo:render',
+      () => {
+        if (this.stopObserving) {
+          this.restart();
+        }
+      },
       { capture: true },
     );
   }
@@ -83,13 +90,21 @@ class ContentOrchestrator {
     this.enable();
   }
 
+  private async applyIconPack(iconPack: ThemePackId) {
+    await this.themeProvider.setIconPack(iconPack);
+
+    if (this.stopObserving) {
+      this.restart();
+    }
+  }
+
   private applyIcon(entry: FileEntry) {
     if (!this.adapter) {
       return;
     }
 
     const icon = this.themeProvider.resolveIcon({
-      filename: entry.filename,
+      filename: entry.path,
       type: entry.type,
       isOpen: entry.isOpen,
       isRoot: entry.isRoot,
