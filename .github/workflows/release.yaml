@@ -57,10 +57,23 @@ jobs:
           mv *-chrome.zip "github-material-icons-${{ steps.version.outputs.version }}-chrome.zip" 2>/dev/null || true
           mv *-firefox.zip "github-material-icons-${{ steps.version.outputs.version }}-firefox.zip" 2>/dev/null || true
 
+      - name: Compute release metadata
+        id: meta
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          PR="${{ github.event.pull_request.number }}"
+          if [ -n "$PR" ]; then
+            echo "tag=v${VERSION}-pr${PR}" >> $GITHUB_OUTPUT
+            echo "name=Auto release for PR #${PR}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=v${VERSION}-run${{ github.run_number }}" >> $GITHUB_OUTPUT
+            echo "name=Release v${VERSION}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}-${{ github.event.pull_request.number && format('pr{0}', github.event.pull_request.number) || format('run{0}', github.run_number) }}
-          name: ${{ github.event.pull_request.number && format('Auto release for PR #{0}', github.event.pull_request.number) || format('Release v{0}', steps.version.outputs.version) }}
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: ${{ steps.meta.outputs.name }}
           generate_release_notes: true
           files: output/*.zip
