@@ -1,0 +1,63 @@
+name: Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  release:
+    if: >
+      github.event.pull_request.merged == true &&
+      !contains(toJson(github.event.pull_request.labels), '"no-release"') &&
+      !contains(github.event.pull_request.title, '[no-release]')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extract version
+        id: version
+        run: echo "version=$(node -p 'require("./package.json").version')" >> $GITHUB_OUTPUT
+
+      - name: Build & zip (Chrome)
+        run: npx wxt zip
+
+      - name: Build & zip (Firefox)
+        run: npx wxt zip -b firefox
+
+      - name: Build & zip Safari extension
+        run: |
+          npx wxt build -b safari
+          SAFARI_DIR=$(ls -d output/safari-* 2>/dev/null | head -1)
+          cd "$SAFARI_DIR" && zip -qr "../github-material-icons-${{ steps.version.outputs.version }}-safari.zip" .
+
+      - name: Rename artifacts for clarity
+        run: |
+          cd output
+          mv *-chrome.zip "github-material-icons-${{ steps.version.outputs.version }}-chrome.zip" 2>/dev/null || true
+          mv *-firefox.zip "github-material-icons-${{ steps.version.outputs.version }}-firefox.zip" 2>/dev/null || true
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}-pr${{ github.event.pull_request.number }}
+          name: Auto release for PR #${{ github.event.pull_request.number }}
+          generate_release_notes: true
+          files: output/*.zip
