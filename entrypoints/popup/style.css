@@ -1,0 +1,93 @@
+:root {
+  color-scheme: light;
+  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+  line-height: 1.4;
+  font-weight: 400;
+  color: #10141f;
+  background:
+    radial-gradient(circle at top left, #ffe5c4 0, transparent 36%),
+    linear-gradient(160deg, #fffaf4 0%, #f0f4ff 100%);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.popup-shell {
+  padding: 18px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  color: #7f4f24;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0 0 18px;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.toggle-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 14px 16px;
+  border: 1px solid rgba(16, 20, 31, 0.1);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 12px 24px rgba(26, 35, 52, 0.08);
+}
+
+.toggle-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.toggle-copy {
+  margin: 6px 0 0;
+  color: #4b5566;
+  font-size: 13px;
+}
+
+input[type="checkbox"] {
+  width: 42px;
+  height: 24px;
+  accent-color: #0f766e;
+}
+
+.meta-list {
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.meta-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(16, 20, 31, 0.08);
+}
+
+.meta-list dt {
+  color: #4b5566;
+}
+
+.meta-list dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}
