@@ -77,3 +77,14 @@ jobs:
           name: ${{ steps.meta.outputs.name }}
           generate_release_notes: true
           files: output/*.zip
+
+      - name: Publish to Chrome Web Store
+        uses: browser-actions/release-chrome-extension@v0
+        continue-on-error: true
+        with:
+          extension-id: ${{ vars.CWS_EXTENSION_ID }}
+          extension-path: output/github-material-icons-${{ steps.version.outputs.version }}-chrome.zip
+          oauth-client-id: ${{ vars.CWS_CLIENT_ID }}
+          oauth-client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
+          oauth-refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
+          publish-target: default
