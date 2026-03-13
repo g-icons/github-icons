@@ -1,7 +1,30 @@
 import './style.css';
 
+import { allThemePacks } from '../../src/generated/theme-packs';
 import { activeIconPack, extensionEnabled } from '../../src/storage/settings';
 import type { ThemePackId } from '../../src/icon-engine/types';
+
+const PACK_LABELS: Partial<Record<ThemePackId, string>> = {
+  default: 'Material Icon Theme',
+  angular: 'Material Icon Theme: Angular',
+  nest: 'Material Icon Theme: Nest',
+  angular_ngrx: 'Material Icon Theme: Angular NgRx',
+  react: 'Material Icon Theme: React',
+  react_redux: 'Material Icon Theme: React Redux',
+  roblox: 'Material Icon Theme: Roblox',
+  qwik: 'Material Icon Theme: Qwik',
+  vue: 'Material Icon Theme: Vue',
+  vue_vuex: 'Material Icon Theme: Vue Vuex',
+  bashly: 'Material Icon Theme: Bashly',
+  'vscode-icons': 'VSCode Icons',
+  seti: 'Seti UI',
+};
+
+function formatPackLabel(pack: ThemePackId): string {
+  return PACK_LABELS[pack] ?? pack;
+}
+
+const themeOptions = allThemePacks.map((pack) => `<option value="${pack}">${formatPackLabel(pack)}</option>`).join('');
 
 const app = document.querySelector<HTMLDivElement>('#app');
 
@@ -14,16 +37,13 @@ app.innerHTML = `
     <p class="eyebrow">GitHub Icons</p>
     <dl class="meta-list">
       <div>
-        <dt>Enable on GitHub</dt>
-        <dd><label class="toggle" for="enabled"><input id="enabled" type="checkbox" /><span class="toggle-track"></span></label></dd>
+        <dabled" type="checkbox" /><span class="toggle-track"></span></label></dd>
       </div>
       <div>
         <dt>Theme</dt>
         <dd>
           <select id="theme-select">
-            <option value="default">Material Icon Theme</option>
-            <option value="vscode-icons">VSCode Icons</option>
-            <option value="seti">Seti UI</option>
+            ${themeOptions}
           </select>
         </dd>
       </div>
@@ -34,20 +54,12 @@ app.innerHTML = `
 const enabledToggle = document.querySelector<HTMLInputElement>('#enabled')!;
 const themeSelect = document.querySelector<HTMLSelectElement>('#theme-select')!;
 
-function packToThemeValue(pack: ThemePackId): string {
-  if (pack === 'vscode-icons' || pack === 'seti') return pack;
-  return 'default';
-}
-
 function renderPack(pack: ThemePackId) {
-  themeSelect.value = packToThemeValue(pack);
+  themeSelect.value = pack;
 }
 
 async function bootstrap() {
-  const [enabled, pack] = await Promise.all([
-    extensionEnabled.getValue(),
-    activeIconPack.getValue(),
-  ]);
+  const [enabled, pack] = await Promise.all([extensionEnabled.getValue(), activeIconPack.getValue()]);
 
   enabledToggle.checked = enabled;
   renderPack(pack);

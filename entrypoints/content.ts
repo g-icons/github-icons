@@ -13,7 +13,13 @@ class ContentOrchestrator {
 
   private readonly themeProvider: ThemeProvider;
 
+  private readonly lightModeQuery = window.matchMedia(
+    '(prefers-color-scheme: light)',
+  );
+
   private stopObserving: (() => void) | null = null;
+
+  private themeObserver: MutationObserver | null = null;
 
   constructor() {
     this.adapter = detectSiteAdapter();
@@ -65,6 +71,8 @@ class ContentOrchestrator {
       },
       { capture: true },
     );
+
+    this.observeThemeChanges();
   }
 
   private enable() {
@@ -108,6 +116,7 @@ class ContentOrchestrator {
       type: entry.type,
       isOpen: entry.isOpen,
       isRoot: entry.isRoot,
+      preferLight: this.isLightTheme(),
     });
 
     if (!icon) {
@@ -115,6 +124,56 @@ class ContentOrchestrator {
     }
 
     this.adapter.replaceIcon(entry, icon.url);
+  }
+
+  private isLightTheme(): boolean {
+    const colorMode = document.documentElement.getAttribute('data-color-mode');
+
+    if (colorMode === 'light') {
+      return true;
+    }
+
+    if (colorMode === 'dark') {
+      return false;
+    }
+
+    return this.lightModeQuery.matches;
+  }
+
+  private observeThemeChanges() {
+    const handleThemeChange = () => {
+      if (!this.stopObserving) {
+        return;
+      }
+
+      this.restart();
+    };
+
+    this.themeObserver = new MutationObserver((mutations) => {
+      if (
+        mutations.some(
+          (mutation) =>
+            mutation.type === 'attributes' &&
+            mutation.target === document.documentElement,
+        )
+      ) {
+        handleThemeChange();
+      }
+    });
+
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-color-mode', 'data-light-theme', 'data-dark-theme'],
+    });
+
+    if (typeof this.lightModeQuery.addEventListener === 'function') {
+      this.lightModeQuery.addEventListener('change', handleThemeChange);
+      return;
+    }
+
+    (this.lightModeQuery as MediaQueryList & {
+      addListener?: (listener: (event: MediaQueryListEvent) => void) => void;
+    }).addListener?.(handleThemeChange);
   }
 }
 

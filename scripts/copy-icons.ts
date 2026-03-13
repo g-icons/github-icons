@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
+import type { Manifest } from 'material-icon-theme';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(scriptDir, '..');
@@ -25,6 +26,87 @@ interface IconifyData {
   aliases?: Record<string, { parent: string }>;
   width: number;
   height: number;
+}
+
+function collectReferencedIconIds(manifest: Manifest): Set<string> {
+  const referenced = new Set<string>();
+  const addMap = (map: Record<string, string> | undefined) => {
+    if (!map) {
+      return;
+    }
+
+    for (const iconId of Object.values(map)) {
+      if (iconId) {
+        referenced.add(iconId);
+      }
+    }
+  };
+
+  [
+    manifest.fileNames,
+    manifest.fileExtensions,
+    manifest.languageIds,
+    manifest.folderNames,
+    manifest.folderNamesExpanded,
+    manifest.rootFolderNames,
+    manifest.rootFolderNamesExpanded,
+    manifest.light?.fileNames,
+    manifest.light?.fileExtensions,
+    manifest.light?.languageIds,
+    manifest.light?.folderNames,
+    manifest.light?.folderNamesExpanded,
+    manifest.light?.rootFolderNames,
+    manifest.light?.rootFolderNamesExpanded,
+  ].forEach(addMap);
+
+  for (const iconId of [
+    manifest.file,
+    manifest.folder,
+    manifest.folderExpanded,
+    manifest.rootFolder,
+    manifest.rootFolderExpanded,
+    manifest.light?.file,
+    manifest.light?.folder,
+    manifest.light?.folderExpanded,
+    manifest.light?.rootFolder,
+    manifest.light?.rootFolderExpanded,
+  ]) {
+    if (iconId) {
+      referenced.add(iconId);
+    }
+  }
+
+  return referenced;
+}
+
+function findUnreferencedIconIds(manifest: Manifest): string[] {
+  const referenced = collectReferencedIconIds(manifest);
+
+  return Object.keys(manifest.iconDefinitions ?? {}).filter(
+    (iconId) => !referenced.has(iconId),
+  );
+}
+
+function assertAllIconsReachable(manifests: Record<string, Manifest>) {
+  const failures = Object.entries(manifests)
+    .map(([pack, manifest]) => ({
+      pack,
+      unused: findUnreferencedIconIds(manifest),
+    }))
+    .filter(({ unused }) => unused.length > 0);
+
+  if (failures.length === 0) {
+    return;
+  }
+
+  const summary = failures
+    .map(
+      ({ pack, unused }) =>
+        `${pack}: ${unused.length} unused (${unused.slice(0, 10).join(', ')})`,
+    )
+    .join('\n');
+
+  throw new Error(`Generated manifests still contain unreachable icons.\n${summary}`);
 }
 
 function buildSvg(body: string, width: number, height: number): string {
@@ -64,6 +146,13 @@ async function main() {
   const { manifests: materialManifests } = buildMaterialThemeManifests();
   const { manifest: vscodeIconsManifest, svgFilenames } = buildVscodeIconsManifest(vscodeIconsJsonPath);
   const { manifest: setiManifest, svgFiles: setiSvgFiles } = buildSetiManifest(setiDefinitionsPath, setiIconsPath);
+  const allManifests: Record<string, Manifest> = {
+    ...materialManifests,
+    'vscode-icons': vscodeIconsManifest,
+    seti: setiManifest,
+  };
+
+  assertAllIconsReachable(allManifests);
 
   await rm(iconsTargetDir, { force: true, recursive: true });
   await mkdir(iconsTargetDir, { recursive: true });
@@ -78,7 +167,6 @@ async function main() {
   await rm(manifestsTargetDir, { force: true, recursive: true });
   await mkdir(manifestsTargetDir, { recursive: true });
 
-  const allManifests: Record<string, unknown> = { ...materialManifests, 'vscode-icons': vscodeIconsManifest, 'seti': setiManifest };
   await Promise.all(
     Object.entries(allManifests).map(([pack, manifest]) =>
       writeFile(resolve(manifestsTargetDir, `${pack}.json`), JSON.stringify(manifest)),

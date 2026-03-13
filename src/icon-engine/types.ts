@@ -13,6 +13,7 @@ export interface IconQuery {
   type: FileEntryType;
   isOpen?: boolean;
   isRoot?: boolean;
+  preferLight?: boolean;
 }
 
 export interface ResolvedIcon {
