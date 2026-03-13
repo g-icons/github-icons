@@ -1,7 +1,7 @@
 import type { Manifest } from 'material-icon-theme';
 import { browser } from 'wxt/browser';
 
-import { materialThemeIconPacks } from '../generated/material-theme-packs';
+import { allThemePacks } from '../generated/theme-packs';
 import { resolveManifestIcon } from './resolver';
 import type { IconQuery, ResolvedIcon, ThemePackId, ThemeProvider } from './types';
 
@@ -10,7 +10,7 @@ export const DEFAULT_THEME_NAME = 'material';
 const manifestCache = new Map<ThemePackId, Promise<Manifest>>();
 
 function isSupportedPack(pack: string): pack is ThemePackId {
-  return (materialThemeIconPacks as readonly string[]).includes(pack);
+  return (allThemePacks as readonly string[]).includes(pack);
 }
 
 async function fetchManifest(pack: ThemePackId): Promise<Manifest> {
@@ -39,7 +39,7 @@ function loadManifest(pack: ThemePackId): Promise<Manifest> {
   return request;
 }
 
-class MaterialThemeProvider implements ThemeProvider {
+class ThemeProviderImpl implements ThemeProvider {
   public readonly name = DEFAULT_THEME_NAME;
 
   private activePack: ThemePackId;
@@ -61,7 +61,7 @@ class MaterialThemeProvider implements ThemeProvider {
   }
 
   getAvailableIconPacks(): readonly ThemePackId[] {
-    return materialThemeIconPacks;
+    return allThemePacks;
   }
 
   getActiveIconPack(): ThemePackId {
@@ -97,5 +97,5 @@ class MaterialThemeProvider implements ThemeProvider {
 export function createThemeProvider(
   initialPack: ThemePackId = 'default',
 ): ThemeProvider {
-  return new MaterialThemeProvider(initialPack);
+  return new ThemeProviderImpl(initialPack);
 }
