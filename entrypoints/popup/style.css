@@ -91,3 +91,9 @@ input[type="checkbox"] {
   font-weight: 600;
   text-align: right;
 }
+
+.meta-list select {
+  min-width: 180px;
+  max-width: 220px;
+  width: 100%;
+}

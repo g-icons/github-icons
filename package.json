@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "sync:assets": "tsx scripts/copy-icons.ts",
+    "sync:readme": "tsx scripts/update-readme.ts",
     "dev": "npm run sync:assets && wxt",
     "dev:firefox": "npm run sync:assets && wxt -b firefox",
     "build": "npm run sync:assets && wxt build",
