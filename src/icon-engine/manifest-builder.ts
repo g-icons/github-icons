@@ -19,6 +19,7 @@ export const SUPPORTED_MATERIAL_PACKS: readonly MaterialPackId[] = [
 export const ALL_THEME_PACKS: readonly ThemePackId[] = [
   ...SUPPORTED_MATERIAL_PACKS,
   'vscode-icons',
+  'seti',
 ];
 
 function normalizeIconPath(iconPath: string): string {
@@ -143,4 +144,98 @@ export function buildVscodeIconsManifest(iconsJsonPath: string): { manifest: Man
   };
 
   return { manifest, svgFilenames };
+}
+
+// --- Seti UI ---
+
+const SETI_COLORS: Record<string, string> = {
+  blue: '#519aba',
+  green: '#8dc149',
+  orange: '#e37933',
+  pink: '#f55385',
+  purple: '#a074c4',
+  red: '#cc3e44',
+  white: '#d4d7d6',
+  yellow: '#cbcb41',
+  'grey-light': '#6d8086',
+  grey: '#41535b',
+  ignore: '#41535b',
+};
+
+interface SetiDefinitions {
+  files: Record<string, [string, string]>;
+  extensions: Record<string, [string, string]>;
+  partials: [string, [string, string]][];
+  default: [string, string];
+}
+
+function setiIconId(icon: string, color: string): string {
+  return `seti_${icon}_${color}`;
+}
+
+function setiSvgFilename(icon: string, color: string): string {
+  return `seti_${icon}_${color}.svg`;
+}
+
+export function buildSetiManifest(definitionsPath: string, iconsPath: string): { manifest: Manifest; svgFiles: Map<string, string> } {
+  const defs: SetiDefinitions = JSON.parse(readFileSync(definitionsPath, 'utf-8'));
+  const icons: Record<string, string> = JSON.parse(readFileSync(iconsPath, 'utf-8'));
+
+  const usedCombos = new Set<string>();
+  const iconDefinitions: Record<string, { iconPath: string }> = {};
+
+  function ensureCombo(icon: string, color: string): string {
+    const id = setiIconId(icon, color);
+    if (!usedCombos.has(id)) {
+      usedCombos.add(id);
+      iconDefinitions[id] = { iconPath: `/icons/${setiSvgFilename(icon, color)}` };
+    }
+    return id;
+  }
+
+  const [defaultIcon, defaultColor] = defs.default;
+  const defaultId = ensureCombo(defaultIcon, defaultColor);
+
+  const fileNames: Record<string, string> = {};
+  for (const [filename, [icon, color]] of Object.entries(defs.files)) {
+    fileNames[filename] = ensureCombo(icon, color);
+  }
+  for (const [filename, [icon, color]] of defs.partials) {
+    fileNames[filename] = ensureCombo(icon, color);
+  }
+
+  const fileExtensions: Record<string, string> = {};
+  for (const [ext, [icon, color]] of Object.entries(defs.extensions)) {
+    const normalizedExt = ext.startsWith('.') ? ext.slice(1) : ext;
+    fileExtensions[normalizedExt] = ensureCombo(icon, color);
+  }
+
+  const svgFiles = new Map<string, string>();
+  for (const comboId of usedCombos) {
+    const parts = comboId.replace('seti_', '').split('_');
+    const color = parts.pop()!;
+    const icon = parts.join('_');
+    const svgBody = icons[icon];
+    if (!svgBody) continue;
+
+    const hex = SETI_COLORS[color] ?? SETI_COLORS.white;
+    const coloredSvg = svgBody.replace('<svg ', `<svg xmlns="http://www.w3.org/2000/svg" fill="${hex}" `);
+    svgFiles.set(setiSvgFilename(icon, color), coloredSvg);
+  }
+
+  const manifest: Manifest = {
+    iconDefinitions,
+    file: defaultId,
+    folder: undefined,
+    folderExpanded: undefined,
+    rootFolder: undefined,
+    rootFolderExpanded: undefined,
+    folderNames: {},
+    folderNamesExpanded: {},
+    fileExtensions,
+    fileNames,
+    languageIds: {},
+  };
+
+  return { manifest, svgFiles };
 }

@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+if [ "${SSMVER_AMENDING:-}" = "1" ]; then
+  exit 0
+fi
+
+if [ ! -f "ssmver.toml" ]; then
+  exit 0
+fi
+
+if git diff --quiet -- ssmver.toml; then
+  exit 0
+fi
+
+git add ssmver.toml
+SSMVER_AMENDING=1 git commit --amend --no-edit >/dev/null

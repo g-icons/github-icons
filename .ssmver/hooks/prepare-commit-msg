@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")/../scripts" && pwd)
+. "$SCRIPT_DIR/bump_version.sh"
+
+ssmver_prepare_commit_msg "$1" "${2:-}"
