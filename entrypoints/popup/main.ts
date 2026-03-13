@@ -1,30 +1,38 @@
 import './style.css';
 
-import { allThemePacks } from '../../src/generated/theme-packs';
 import { activeIconPack, extensionEnabled } from '../../src/storage/settings';
-import type { ThemePackId } from '../../src/icon-engine/types';
+import type { MaterialPackId, ThemeId, ThemePackId } from '../../src/icon-engine/types';
 
-const PACK_LABELS: Partial<Record<ThemePackId, string>> = {
-  default: 'Material Icon Theme',
-  angular: 'Material Icon Theme: Angular',
-  nest: 'Material Icon Theme: Nest',
-  angular_ngrx: 'Material Icon Theme: Angular NgRx',
-  react: 'Material Icon Theme: React',
-  react_redux: 'Material Icon Theme: React Redux',
-  roblox: 'Material Icon Theme: Roblox',
-  qwik: 'Material Icon Theme: Qwik',
-  vue: 'Material Icon Theme: Vue',
-  vue_vuex: 'Material Icon Theme: Vue Vuex',
-  bashly: 'Material Icon Theme: Bashly',
-  'vscode-icons': 'VSCode Icons',
-  seti: 'Seti UI',
-};
+const TOP_LEVEL_THEMES: { value: ThemeId; label: string }[] = [
+  { value: 'material', label: 'Material Icon Theme' },
+  { value: 'vscode-icons', label: 'VSCode Icons' },
+  { value: 'seti', label: 'Seti UI' },
+  { value: 'symbols', label: 'Symbols' },
+];
 
-function formatPackLabel(pack: ThemePackId): string {
-  return PACK_LABELS[pack] ?? pack;
+const MATERIAL_SUB_PACKS: { value: MaterialPackId; label: string }[] = [
+  { value: 'default', label: 'Default' },
+  { value: 'angular', label: 'Angular' },
+  { value: 'nest', label: 'Nest' },
+  { value: 'angular_ngrx', label: 'Angular NgRx' },
+  { value: 'react', label: 'React' },
+  { value: 'react_redux', label: 'React Redux' },
+  { value: 'roblox', label: 'Roblox' },
+  { value: 'qwik', label: 'Qwik' },
+  { value: 'vue', label: 'Vue' },
+  { value: 'vue_vuex', label: 'Vue Vuex' },
+  { value: 'bashly', label: 'Bashly' },
+];
+
+const STANDALONE_THEMES: Set<string> = new Set(['vscode-icons', 'seti', 'symbols']);
+
+function packToTheme(pack: ThemePackId): ThemeId {
+  if (STANDALONE_THEMES.has(pack)) return pack as ThemeId;
+  return 'material';
 }
 
-const themeOptions = allThemePacks.map((pack) => `<option value="${pack}">${formatPackLabel(pack)}</option>`).join('');
+const themeOptions = TOP_LEVEL_THEMES.map((t) => `<option value="${t.value}">${t.label}</option>`).join('');
+const subPackOptions = MATERIAL_SUB_PACKS.map((p) => `<option value="${p.value}">${p.label}</option>`).join('');
 
 const app = document.querySelector<HTMLDivElement>('#app');
 
@@ -37,7 +45,8 @@ app.innerHTML = `
     <p class="eyebrow">GitHub Icons</p>
     <dl class="meta-list">
       <div>
-        <dabled" type="checkbox" /><span class="toggle-track"></span></label></dd>
+        <dt>Enable on GitHub</dt>
+        <dd><label class="toggle" for="enabled"><input id="enabled" type="checkbox" /><span class="toggle-track"></span></label></dd>
       </div>
       <div>
         <dt>Theme</dt>
@@ -47,15 +56,34 @@ app.innerHTML = `
           </select>
         </dd>
       </div>
+      <div id="sub-pack-row" class="hidden">
+        <dt>Variant</dt>
+        <dd>
+          <select id="sub-pack-select">
+            ${subPackOptions}
+          </select>
+        </dd>
+      </div>
     </dl>
   </main>
 `;
 
 const enabledToggle = document.querySelector<HTMLInputElement>('#enabled')!;
 const themeSelect = document.querySelector<HTMLSelectElement>('#theme-select')!;
+const subPackSelect = document.querySelector<HTMLSelectElement>('#sub-pack-select')!;
+const subPackRow = document.querySelector<HTMLDivElement>('#sub-pack-row')!;
+
+function updateSubPackVisibility(theme: ThemeId) {
+  subPackRow.classList.toggle('hidden', theme !== 'material');
+}
 
 function renderPack(pack: ThemePackId) {
-  themeSelect.value = pack;
+  const theme = packToTheme(pack);
+  themeSelect.value = theme;
+  if (theme === 'material') {
+    subPackSelect.value = pack;
+  }
+  updateSubPackVisibility(theme);
 }
 
 async function bootstrap() {
@@ -72,9 +100,18 @@ enabledToggle.addEventListener('change', async () => {
 });
 
 themeSelect.addEventListener('change', async () => {
+  const theme = themeSelect.value as ThemeId;
+  updateSubPackVisibility(theme);
+  const pack: ThemePackId = theme === 'material' ? subPackSelect.value as MaterialPackId : theme;
   themeSelect.disabled = true;
-  await activeIconPack.setValue(themeSelect.value as ThemePackId);
+  await activeIconPack.setValue(pack);
   themeSelect.disabled = false;
+});
+
+subPackSelect.addEventListener('change', async () => {
+  subPackSelect.disabled = true;
+  await activeIconPack.setValue(subPackSelect.value as ThemePackId);
+  subPackSelect.disabled = false;
 });
 
 extensionEnabled.watch((enabled) => { enabledToggle.checked = enabled; });

@@ -1,9 +1,9 @@
-import { cp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { cp, copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
+import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
 import type { Manifest } from 'material-icon-theme';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -19,6 +19,7 @@ const vscodeIconsJsonPath = resolve(projectRoot, 'node_modules/vscode-icons-js/d
 const iconifyJsonPath = resolve(projectRoot, 'node_modules/@iconify-json/vscode-icons/icons.json');
 const setiDefinitionsPath = resolve(projectRoot, 'node_modules/@peoplesgrocers/seti-ui-file-icons/lib/definitions.json');
 const setiIconsPath = resolve(projectRoot, 'node_modules/@peoplesgrocers/seti-ui-file-icons/lib/icons.json');
+const symbolsThemeJsonPath = resolve(projectRoot, 'node_modules/vscode-symbols/src/symbol-icon-theme.json');
 
 interface IconifyData {
   prefix: string;
@@ -146,10 +147,12 @@ async function main() {
   const { manifests: materialManifests } = buildMaterialThemeManifests();
   const { manifest: vscodeIconsManifest, svgFilenames } = buildVscodeIconsManifest(vscodeIconsJsonPath);
   const { manifest: setiManifest, svgFiles: setiSvgFiles } = buildSetiManifest(setiDefinitionsPath, setiIconsPath);
+  const { manifest: symbolsManifest, iconSources: symbolsSources } = buildSymbolsManifest(symbolsThemeJsonPath);
   const allManifests: Record<string, Manifest> = {
     ...materialManifests,
     'vscode-icons': vscodeIconsManifest,
     seti: setiManifest,
+    symbols: symbolsManifest as Manifest,
   };
 
   assertAllIconsReachable(allManifests);
@@ -161,6 +164,11 @@ async function main() {
   await Promise.all(
     [...setiSvgFiles.entries()].map(([filename, svg]) =>
       writeFile(resolve(iconsTargetDir, filename), svg),
+    ),
+  );
+  await Promise.all(
+    [...symbolsSources.entries()].map(([prefixedName, sourcePath]) =>
+      copyFile(sourcePath, resolve(iconsTargetDir, prefixedName)),
     ),
   );
 
