@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@iconify-json/vscode-icons": "^1.2.45",
+    "@peoplesgrocers/seti-ui-file-icons": "^1.11.3",
     "material-icon-theme": "^5.32.0",
     "selector-observer": "^2.1.6",
     "vscode-icons-js": "^11.6.1"

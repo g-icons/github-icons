@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildMaterialThemeManifests, buildVscodeIconsManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
+import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(scriptDir, '..');
@@ -16,6 +16,8 @@ const legacyGeneratedPacksFile = resolve(projectRoot, 'src/generated/material-th
 
 const vscodeIconsJsonPath = resolve(projectRoot, 'node_modules/vscode-icons-js/data/generated/icons.json');
 const iconifyJsonPath = resolve(projectRoot, 'node_modules/@iconify-json/vscode-icons/icons.json');
+const setiDefinitionsPath = resolve(projectRoot, 'node_modules/@peoplesgrocers/seti-ui-file-icons/lib/definitions.json');
+const setiIconsPath = resolve(projectRoot, 'node_modules/@peoplesgrocers/seti-ui-file-icons/lib/icons.json');
 
 interface IconifyData {
   prefix: string;
@@ -61,16 +63,22 @@ async function extractVscodeIconsSvgs(svgFilenames: string[]): Promise<void> {
 async function main() {
   const { manifests: materialManifests } = buildMaterialThemeManifests();
   const { manifest: vscodeIconsManifest, svgFilenames } = buildVscodeIconsManifest(vscodeIconsJsonPath);
+  const { manifest: setiManifest, svgFiles: setiSvgFiles } = buildSetiManifest(setiDefinitionsPath, setiIconsPath);
 
   await rm(iconsTargetDir, { force: true, recursive: true });
   await mkdir(iconsTargetDir, { recursive: true });
   await cp(materialIconsSourceDir, iconsTargetDir, { recursive: true });
   await extractVscodeIconsSvgs(svgFilenames);
+  await Promise.all(
+    [...setiSvgFiles.entries()].map(([filename, svg]) =>
+      writeFile(resolve(iconsTargetDir, filename), svg),
+    ),
+  );
 
   await rm(manifestsTargetDir, { force: true, recursive: true });
   await mkdir(manifestsTargetDir, { recursive: true });
 
-  const allManifests: Record<string, unknown> = { ...materialManifests, 'vscode-icons': vscodeIconsManifest };
+  const allManifests: Record<string, unknown> = { ...materialManifests, 'vscode-icons': vscodeIconsManifest, 'seti': setiManifest };
   await Promise.all(
     Object.entries(allManifests).map(([pack, manifest]) =>
       writeFile(resolve(manifestsTargetDir, `${pack}.json`), JSON.stringify(manifest)),
