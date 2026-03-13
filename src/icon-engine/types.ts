@@ -2,11 +2,11 @@ import type { IconPackValue } from 'material-icon-theme';
 
 export type FileEntryType = 'file' | 'directory' | 'submodule' | 'symlink';
 
-export type ThemeId = 'material' | 'vscode-icons' | 'seti';
+export type ThemeId = 'material' | 'vscode-icons' | 'seti' | 'symbols';
 
 export type MaterialPackId = 'default' | Exclude<IconPackValue, ''>;
 
-export type ThemePackId = MaterialPackId | 'vscode-icons' | 'seti';
+export type ThemePackId = MaterialPackId | 'vscode-icons' | 'seti' | 'symbols';
 
 export interface IconQuery {
   filename: string;
