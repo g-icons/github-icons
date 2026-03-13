@@ -151,3 +151,4 @@ tmp
 .vscode
 .output
 .docs
+.DS_Store
