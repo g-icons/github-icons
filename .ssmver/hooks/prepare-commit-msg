@@ -1,7 +1,15 @@
 #!/bin/sh
 set -eu
 
-SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")/../scripts" && pwd)
-. "$SCRIPT_DIR/bump_version.sh"
+SSMVER_BIN='/Users/hjoncour/.cargo/bin/ssmver'
 
-ssmver_prepare_commit_msg "$1" "${2:-}"
+if [ -x "$SSMVER_BIN" ]; then
+  exec "$SSMVER_BIN" hook prepare-commit-msg "$@"
+fi
+
+if command -v ssmver >/dev/null 2>&1; then
+  exec "$(command -v ssmver)" hook prepare-commit-msg "$@"
+fi
+
+echo "ssmver binary not found; rerun 'ssmver init' or install ssmver" >&2
+exit 1
