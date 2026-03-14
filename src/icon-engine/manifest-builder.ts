@@ -22,6 +22,7 @@ export const ALL_THEME_PACKS: readonly ThemePackId[] = [
   'seti',
   'symbols',
   'catppuccin',
+  'great-icons',
 ];
 
 function normalizeIconPath(iconPath: string): string {
@@ -706,4 +707,46 @@ export function buildCatppuccinManifest(themeJsonPath: string): { manifest: Mani
   }
 
   return { manifest, svgFilenames: filteredFilenames };
+}
+
+// --- Great Icons ---
+
+export function buildGreatIconsManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
+  const raw: CatppuccinRawManifest = JSON.parse(readFileSync(themeJsonPath, 'utf-8'));
+  const themeDir = path.dirname(themeJsonPath);
+
+  const iconDefinitions: Record<string, { iconPath: string }> = {};
+  const iconSources = new Map<string, string>();
+
+  for (const [id, def] of Object.entries(raw.iconDefinitions)) {
+    const basename = path.posix.basename(def.iconPath);
+    const prefixed = `greaticons_${basename}`;
+    iconDefinitions[id] = { iconPath: `/icons/${prefixed}` };
+    iconSources.set(prefixed, path.resolve(themeDir, def.iconPath));
+  }
+
+  const manifest: Manifest = {
+    iconDefinitions,
+    file: raw.file,
+    folder: raw.folder,
+    folderExpanded: raw.folderExpanded,
+    rootFolder: raw.rootFolder,
+    rootFolderExpanded: raw.rootFolderExpanded,
+    folderNames: raw.folderNames ?? {},
+    folderNamesExpanded: raw.folderNamesExpanded ?? {},
+    fileExtensions: raw.fileExtensions,
+    fileNames: raw.fileNames,
+    languageIds: raw.languageIds ?? {},
+  };
+
+  const referenced = collectReferencedIconIds(manifest);
+  for (const id of Object.keys(iconDefinitions)) {
+    if (!referenced.has(id)) {
+      delete iconDefinitions[id];
+      const prefixed = `greaticons_${path.posix.basename(raw.iconDefinitions[id].iconPath)}`;
+      iconSources.delete(prefixed);
+    }
+  }
+
+  return { manifest, iconSources };
 }

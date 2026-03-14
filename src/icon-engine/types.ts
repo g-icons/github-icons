@@ -2,11 +2,11 @@ import type { IconPackValue } from 'material-icon-theme';
 
 export type FileEntryType = 'file' | 'directory' | 'submodule' | 'symlink';
 
-export type ThemeId = 'material' | 'vscode-icons' | 'seti' | 'symbols' | 'catppuccin';
+export type ThemeId = 'material' | 'vscode-icons' | 'seti' | 'symbols' | 'catppuccin' | 'great-icons';
 
 export type MaterialPackId = 'default' | Exclude<IconPackValue, ''>;
 
-export type ThemePackId = MaterialPackId | 'vscode-icons' | 'seti' | 'symbols' | 'catppuccin';
+export type ThemePackId = MaterialPackId | 'vscode-icons' | 'seti' | 'symbols' | 'catppuccin' | 'great-icons';
 
 export interface IconQuery {
   filename: string;

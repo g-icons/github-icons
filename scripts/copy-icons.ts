@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, buildCatppuccinManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
+import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, buildCatppuccinManifest, buildGreatIconsManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
 import type { Manifest } from 'material-icon-theme';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -22,6 +22,7 @@ const setiIconsPath = resolve(projectRoot, 'node_modules/@peoplesgrocers/seti-ui
 const symbolsThemeJsonPath = resolve(projectRoot, 'node_modules/vscode-symbols/src/symbol-icon-theme.json');
 const catppuccinThemeJsonPath = resolve(projectRoot, 'src/data/catppuccin-theme.json');
 const catppuccinIconifyJsonPath = resolve(projectRoot, 'node_modules/@iconify-json/catppuccin/icons.json');
+const greatIconsThemeJsonPath = resolve(projectRoot, 'src/data/great-icons/icons.json');
 
 interface IconifyData {
   prefix: string;
@@ -179,12 +180,14 @@ async function main() {
   const { manifest: setiManifest, svgFiles: setiSvgFiles } = buildSetiManifest(setiDefinitionsPath, setiIconsPath);
   const { manifest: symbolsManifest, iconSources: symbolsSources } = buildSymbolsManifest(symbolsThemeJsonPath);
   const { manifest: catppuccinManifest, svgFilenames: catppuccinSvgFilenames } = buildCatppuccinManifest(catppuccinThemeJsonPath);
+  const { manifest: greatIconsManifest, iconSources: greatIconsSources } = buildGreatIconsManifest(greatIconsThemeJsonPath);
   const allManifests: Record<string, Manifest> = {
     ...materialManifests,
     'vscode-icons': vscodeIconsManifest,
     seti: setiManifest,
     symbols: symbolsManifest as Manifest,
     catppuccin: catppuccinManifest as Manifest,
+    'great-icons': greatIconsManifest as Manifest,
   };
 
   assertAllIconsReachable(allManifests);
@@ -204,6 +207,11 @@ async function main() {
     ),
   );
   await extractCatppuccinSvgs(catppuccinSvgFilenames);
+  await Promise.all(
+    [...greatIconsSources.entries()].map(([prefixedName, sourcePath]) =>
+      copyFile(sourcePath, resolve(iconsTargetDir, prefixedName)),
+    ),
+  );
 
   await rm(manifestsTargetDir, { force: true, recursive: true });
   await mkdir(manifestsTargetDir, { recursive: true });
