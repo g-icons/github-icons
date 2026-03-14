@@ -21,6 +21,7 @@ export const ALL_THEME_PACKS: readonly ThemePackId[] = [
   'vscode-icons',
   'seti',
   'symbols',
+  'catppuccin',
 ];
 
 function normalizeIconPath(iconPath: string): string {
@@ -649,4 +650,60 @@ export function buildSymbolsManifest(themeJsonPath: string): { manifest: Manifes
   }
 
   return { manifest, iconSources };
+}
+
+// --- Catppuccin ---
+
+interface CatppuccinRawManifest {
+  iconDefinitions: Record<string, { iconPath: string }>;
+  file: string;
+  folder: string;
+  folderExpanded: string;
+  rootFolder: string;
+  rootFolderExpanded: string;
+  fileExtensions: Record<string, string>;
+  fileNames: Record<string, string>;
+  languageIds: Record<string, string>;
+  folderNames: Record<string, string>;
+  folderNamesExpanded: Record<string, string>;
+}
+
+export function buildCatppuccinManifest(themeJsonPath: string): { manifest: Manifest; svgFilenames: string[] } {
+  const raw: CatppuccinRawManifest = JSON.parse(readFileSync(themeJsonPath, 'utf-8'));
+
+  const iconDefinitions: Record<string, { iconPath: string }> = {};
+  const svgFilenames: string[] = [];
+
+  for (const [id, def] of Object.entries(raw.iconDefinitions)) {
+    const basename = path.posix.basename(def.iconPath);
+    const prefixed = `catppuccin_${basename}`;
+    iconDefinitions[id] = { iconPath: `/icons/${prefixed}` };
+    svgFilenames.push(basename);
+  }
+
+  const manifest: Manifest = {
+    iconDefinitions,
+    file: raw.file,
+    folder: raw.folder,
+    folderExpanded: raw.folderExpanded,
+    rootFolder: raw.rootFolder,
+    rootFolderExpanded: raw.rootFolderExpanded,
+    folderNames: raw.folderNames ?? {},
+    folderNamesExpanded: raw.folderNamesExpanded ?? {},
+    fileExtensions: raw.fileExtensions,
+    fileNames: raw.fileNames,
+    languageIds: raw.languageIds ?? {},
+  };
+
+  const referenced = collectReferencedIconIds(manifest);
+  const filteredFilenames: string[] = [];
+  for (const id of Object.keys(iconDefinitions)) {
+    if (referenced.has(id)) {
+      filteredFilenames.push(path.posix.basename(raw.iconDefinitions[id].iconPath));
+    } else {
+      delete iconDefinitions[id];
+    }
+  }
+
+  return { manifest, svgFilenames: filteredFilenames };
 }
