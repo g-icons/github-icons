@@ -20,6 +20,7 @@ export const ALL_THEME_PACKS: readonly ThemePackId[] = [
   ...SUPPORTED_MATERIAL_PACKS,
   'vscode-icons',
   'seti',
+  'symbols',
 ];
 
 function normalizeIconPath(iconPath: string): string {
@@ -595,4 +596,57 @@ export function buildSetiManifest(definitionsPath: string, iconsPath: string): {
   };
 
   return { manifest, svgFiles };
+}
+
+// --- Symbols ---
+
+interface SymbolsRawManifest {
+  iconDefinitions: Record<string, { iconPath: string }>;
+  file: string;
+  folder: string;
+  fileExtensions: Record<string, string>;
+  fileNames: Record<string, string>;
+  languageIds: Record<string, string>;
+  folderNames: Record<string, string>;
+}
+
+export function buildSymbolsManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
+  const raw: SymbolsRawManifest = JSON.parse(readFileSync(themeJsonPath, 'utf-8'));
+  const themeDir = path.dirname(themeJsonPath);
+
+  const iconDefinitions: Record<string, { iconPath: string }> = {};
+  const iconSources = new Map<string, string>();
+
+  for (const [id, def] of Object.entries(raw.iconDefinitions)) {
+    const trimmedPath = def.iconPath.trim();
+    const originalBasename = path.posix.basename(trimmedPath);
+    const prefixedName = `symbols_${originalBasename}`;
+    iconDefinitions[id] = { iconPath: `/icons/${prefixedName}` };
+    iconSources.set(prefixedName, path.resolve(themeDir, trimmedPath));
+  }
+
+  const manifest: Manifest = {
+    iconDefinitions,
+    file: raw.file,
+    folder: raw.folder,
+    folderExpanded: undefined,
+    rootFolder: undefined,
+    rootFolderExpanded: undefined,
+    folderNames: raw.folderNames ?? {},
+    folderNamesExpanded: {},
+    fileExtensions: raw.fileExtensions,
+    fileNames: raw.fileNames,
+    languageIds: raw.languageIds ?? {},
+  };
+
+  const referenced = collectReferencedIconIds(manifest);
+  for (const id of Object.keys(iconDefinitions)) {
+    if (!referenced.has(id)) {
+      delete iconDefinitions[id];
+      const prefixedName = `symbols_${path.posix.basename(raw.iconDefinitions[id].iconPath.trim())}`;
+      iconSources.delete(prefixedName);
+    }
+  }
+
+  return { manifest, iconSources };
 }
