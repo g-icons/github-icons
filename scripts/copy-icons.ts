@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
+import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, buildCatppuccinManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
 import type { Manifest } from 'material-icon-theme';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -20,6 +20,8 @@ const iconifyJsonPath = resolve(projectRoot, 'node_modules/@iconify-json/vscode-
 const setiDefinitionsPath = resolve(projectRoot, 'node_modules/@peoplesgrocers/seti-ui-file-icons/lib/definitions.json');
 const setiIconsPath = resolve(projectRoot, 'node_modules/@peoplesgrocers/seti-ui-file-icons/lib/icons.json');
 const symbolsThemeJsonPath = resolve(projectRoot, 'node_modules/vscode-symbols/src/symbol-icon-theme.json');
+const catppuccinThemeJsonPath = resolve(projectRoot, 'src/data/catppuccin-theme.json');
+const catppuccinIconifyJsonPath = resolve(projectRoot, 'node_modules/@iconify-json/catppuccin/icons.json');
 
 interface IconifyData {
   prefix: string;
@@ -143,16 +145,46 @@ async function extractVscodeIconsSvgs(svgFilenames: string[]): Promise<void> {
   await Promise.all(writes);
 }
 
+async function extractCatppuccinSvgs(svgFilenames: string[]): Promise<void> {
+  const iconify: IconifyData = JSON.parse(readFileSync(catppuccinIconifyJsonPath, 'utf-8'));
+  const defaultSize = 16;
+
+  const writes: Promise<void>[] = [];
+
+  for (const filename of svgFilenames) {
+    const iconifyId = filename.replace('.svg', '').replace(/^_/, '').replace(/_/g, '-');
+    let iconData = iconify.icons[iconifyId];
+
+    if (!iconData && iconify.aliases?.[iconifyId]) {
+      const parentId = iconify.aliases[iconifyId].parent;
+      iconData = iconify.icons[parentId];
+    }
+
+    if (!iconData) {
+      continue;
+    }
+
+    const width = iconData.width ?? defaultSize;
+    const height = iconData.height ?? defaultSize;
+    const svg = buildSvg(iconData.body, width, height);
+    writes.push(writeFile(resolve(iconsTargetDir, `catppuccin_${filename}`), svg));
+  }
+
+  await Promise.all(writes);
+}
+
 async function main() {
   const { manifests: materialManifests } = buildMaterialThemeManifests();
   const { manifest: vscodeIconsManifest, svgFilenames } = buildVscodeIconsManifest(vscodeIconsJsonPath);
   const { manifest: setiManifest, svgFiles: setiSvgFiles } = buildSetiManifest(setiDefinitionsPath, setiIconsPath);
   const { manifest: symbolsManifest, iconSources: symbolsSources } = buildSymbolsManifest(symbolsThemeJsonPath);
+  const { manifest: catppuccinManifest, svgFilenames: catppuccinSvgFilenames } = buildCatppuccinManifest(catppuccinThemeJsonPath);
   const allManifests: Record<string, Manifest> = {
     ...materialManifests,
     'vscode-icons': vscodeIconsManifest,
     seti: setiManifest,
     symbols: symbolsManifest as Manifest,
+    catppuccin: catppuccinManifest as Manifest,
   };
 
   assertAllIconsReachable(allManifests);
@@ -171,6 +203,7 @@ async function main() {
       copyFile(sourcePath, resolve(iconsTargetDir, prefixedName)),
     ),
   );
+  await extractCatppuccinSvgs(catppuccinSvgFilenames);
 
   await rm(manifestsTargetDir, { force: true, recursive: true });
   await mkdir(manifestsTargetDir, { recursive: true });
