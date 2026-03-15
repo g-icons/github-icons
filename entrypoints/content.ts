@@ -4,7 +4,8 @@ import { createThemeProvider } from '../src/icon-engine/theme-registry';
 import type { ThemePackId, ThemeProvider } from '../src/icon-engine/types';
 import {
   activeIconPack,
-  extensionEnabled,
+  enabledGithub,
+  enabledGitlab,
   getExtensionSettings,
 } from '../src/storage/settings';
 
@@ -34,13 +35,16 @@ class ContentOrchestrator {
     const settings = await getExtensionSettings();
     await this.themeProvider.setIconPack(settings.iconPack);
 
-    if (settings.enabled) {
+    const siteEnabled = this.adapter.name === 'gitlab' ? settings.enabledGitlab : settings.enabledGithub;
+
+    if (siteEnabled) {
       this.enable();
     } else {
       this.adapter.restoreIcons();
     }
 
-    extensionEnabled.watch((enabled) => {
+    const enabledSetting = this.adapter.name === 'gitlab' ? enabledGitlab : enabledGithub;
+    enabledSetting.watch((enabled) => {
       if (!this.adapter) {
         return;
       }
@@ -56,6 +60,7 @@ class ContentOrchestrator {
       void this.applyIconPack(iconPack);
     });
 
+    // GitHub uses Turbo for SPA navigation
     document.addEventListener(
       'turbo:before-cache',
       () => this.adapter?.restoreIcons(),
@@ -177,9 +182,20 @@ class ContentOrchestrator {
   }
 }
 
+declare global {
+  interface Window {
+    __gmiInitialized?: boolean;
+  }
+}
+
 export default defineContentScript({
-  matches: ['https://github.com/*'],
+  matches: ['https://github.com/*', 'https://gitlab.com/*'],
   main() {
+    if (window.__gmiInitialized) {
+      return;
+    }
+
+    window.__gmiInitialized = true;
     const orchestrator = new ContentOrchestrator();
     void orchestrator.start();
   },

@@ -3,10 +3,26 @@ import { storage } from 'wxt/utils/storage';
 import type { ThemePackId } from '../icon-engine/types';
 
 export interface ExtensionSettings {
-  enabled: boolean;
+  enabledGithub: boolean;
+  enabledGitlab: boolean;
   iconPack: ThemePackId;
 }
 
+export const enabledGithub = storage.defineItem<boolean>(
+  'local:enabled-github',
+  {
+    fallback: true,
+  },
+);
+
+export const enabledGitlab = storage.defineItem<boolean>(
+  'local:enabled-gitlab',
+  {
+    fallback: true,
+  },
+);
+
+// Keep legacy key working for backwards compat — read-only migration
 export const extensionEnabled = storage.defineItem<boolean>(
   'local:extension-enabled',
   {
@@ -22,13 +38,15 @@ export const activeIconPack = storage.defineItem<ThemePackId>(
 );
 
 export async function getExtensionSettings(): Promise<ExtensionSettings> {
-  const [enabled, iconPack] = await Promise.all([
-    extensionEnabled.getValue(),
+  const [github, gitlab, iconPack] = await Promise.all([
+    enabledGithub.getValue(),
+    enabledGitlab.getValue(),
     activeIconPack.getValue(),
   ]);
 
   return {
-    enabled,
+    enabledGithub: github,
+    enabledGitlab: gitlab,
     iconPack,
   };
 }

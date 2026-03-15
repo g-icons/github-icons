@@ -105,13 +105,13 @@ function resolveDirectoryCandidates(filename: string): string[] {
     return [];
   }
 
-  const candidates = new Set<string>([segments[0]!]);
+  const candidates = new Set<string>([normalizedName]);
 
   if (segments.length > 1) {
-    candidates.add(normalizedName);
     candidates.add(segments.at(-1)!);
+    candidates.add(segments[0]!);
   } else {
-    candidates.add(normalizedName);
+    candidates.add(segments[0]!);
   }
 
   return [...candidates];

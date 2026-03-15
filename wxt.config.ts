@@ -5,16 +5,16 @@ export default defineConfig({
   manifest: {
     name: 'GitHub Icons',
     description:
-      'Replace GitHub file and folder icons with distinct, colorful glyphs.',
-    permissions: ['storage'],
-    host_permissions: ['https://github.com/*'],
+      'Replace GitHub and GitLab file icons with distinct, colorful glyphs.',
+    permissions: ['storage', 'permissions', 'scripting'],
+    host_permissions: ['https://github.com/*', 'https://gitlab.com/*'],
     action: {
       default_title: 'GitHub Icons',
     },
     web_accessible_resources: [
       {
         resources: ['icons/*', 'manifests/*'],
-        matches: ['https://github.com/*'],
+        matches: ['https://github.com/*', 'https://gitlab.com/*'],
       },
     ],
   },

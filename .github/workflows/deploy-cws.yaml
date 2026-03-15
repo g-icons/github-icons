@@ -2,15 +2,6 @@ name: Deploy to Chrome Web Store
 
 on:
   workflow_dispatch:
-    inputs:
-      publish-target:
-        description: "Publish target"
-        required: true
-        type: choice
-        options:
-          - trustedTesters
-          - default
-        default: trustedTesters
 
 permissions:
   contents: read
@@ -59,4 +50,3 @@ jobs:
           oauth-client-id: ${{ secrets.CWS_CLIENT_ID }}
           oauth-client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
           oauth-refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
-          publish-target: ${{ inputs.publish-target }}
