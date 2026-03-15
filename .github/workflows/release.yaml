@@ -12,6 +12,7 @@ permissions:
 
 env:
   NODE_VERSION: "20"
+  ARTIFACT_PREFIX: "github-icons"
 
 jobs:
   release:
@@ -49,26 +50,20 @@ jobs:
         run: |
           npx wxt build -b safari
           SAFARI_DIR=$(ls -d output/safari-* 2>/dev/null | head -1)
-          cd "$SAFARI_DIR" && zip -qr "../github-material-icons-${{ steps.version.outputs.version }}-safari.zip" .
+          cd "$SAFARI_DIR" && zip -qr "../${{ env.ARTIFACT_PREFIX }}-${{ steps.version.outputs.version }}-safari.zip" .
 
       - name: Rename artifacts for clarity
         run: |
           cd output
-          mv *-chrome.zip "github-material-icons-${{ steps.version.outputs.version }}-chrome.zip" 2>/dev/null || true
-          mv *-firefox.zip "github-material-icons-${{ steps.version.outputs.version }}-firefox.zip" 2>/dev/null || true
+          mv *-chrome.zip "${{ env.ARTIFACT_PREFIX }}-${{ steps.version.outputs.version }}-chrome.zip" 2>/dev/null || true
+          mv *-firefox.zip "${{ env.ARTIFACT_PREFIX }}-${{ steps.version.outputs.version }}-firefox.zip" 2>/dev/null || true
 
       - name: Compute release metadata
         id: meta
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          PR="${{ github.event.pull_request.number }}"
-          if [ -n "$PR" ]; then
-            echo "tag=v${VERSION}-pr${PR}" >> $GITHUB_OUTPUT
-            echo "name=Auto release for PR #${PR}" >> $GITHUB_OUTPUT
-          else
-            echo "tag=v${VERSION}-run${{ github.run_number }}" >> $GITHUB_OUTPUT
-            echo "name=Release v${VERSION}" >> $GITHUB_OUTPUT
-          fi
+          echo "tag=v${VERSION}" >> $GITHUB_OUTPUT
+          echo "name=Release - ${VERSION}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
@@ -82,9 +77,9 @@ jobs:
         uses: browser-actions/release-chrome-extension@v0
         continue-on-error: true
         with:
-          extension-id: ${{ vars.CWS_EXTENSION_ID }}
-          extension-path: output/github-material-icons-${{ steps.version.outputs.version }}-chrome.zip
-          oauth-client-id: ${{ vars.CWS_CLIENT_ID }}
+          extension-id: ${{ secrets.CWS_EXTENSION_ID }}
+          extension-path: output/${{ env.ARTIFACT_PREFIX }}-${{ steps.version.outputs.version }}-chrome.zip
+          oauth-client-id: ${{ secrets.CWS_CLIENT_ID }}
           oauth-client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
           oauth-refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
           publish-target: default
