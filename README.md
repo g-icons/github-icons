@@ -2,9 +2,11 @@
 
 A browser extension that replaces GitHub's generic file and folder icons with distinct, colorful glyphs — so your repo tree is readable at a glance.
 
+Learn more at [githubicons.com](https://githubicons.com/).
+
 ## Icon Themes
 
-Choose from five icon themes in the extension popup:
+Choose from six icon themes in the extension popup:
 
 | Theme | Icons | Source |
 |-------|-------|--------|
@@ -13,6 +15,7 @@ Choose from five icon themes in the extension popup:
 | **Seti UI** | 150+ | [seti-ui](https://github.com/jesseweed/seti-ui) |
 | **Symbols** | 240+ | [vscode-symbols](https://github.com/misolori/vscode-symbols) |
 | **Catppuccin** | 650+ | [catppuccin/vscode-icons](https://github.com/catppuccin/vscode-icons) |
+| **Great Icons** | 290+ | [vscode-great-icons](https://github.com/EmmanuelBeziat/vscode-great-icons) |
 
 ## Install
 

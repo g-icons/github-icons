@@ -9,6 +9,7 @@ const TOP_LEVEL_THEMES: { value: ThemeId; label: string }[] = [
   { value: 'seti', label: 'Seti UI' },
   { value: 'symbols', label: 'Symbols' },
   { value: 'catppuccin', label: 'Catppuccin' },
+  { value: 'great-icons', label: 'Great Icons' },
 ];
 
 const MATERIAL_SUB_PACKS: { value: MaterialPackId; label: string }[] = [
@@ -25,7 +26,7 @@ const MATERIAL_SUB_PACKS: { value: MaterialPackId; label: string }[] = [
   { value: 'bashly', label: 'Bashly' },
 ];
 
-const STANDALONE_THEMES: Set<string> = new Set(['vscode-icons', 'seti', 'symbols', 'catppuccin']);
+const STANDALONE_THEMES: Set<string> = new Set(['vscode-icons', 'seti', 'symbols', 'catppuccin', 'great-icons']);
 
 function packToTheme(pack: ThemePackId): ThemeId {
   if (STANDALONE_THEMES.has(pack)) return pack as ThemeId;
