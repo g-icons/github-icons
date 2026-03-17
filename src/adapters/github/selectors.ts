@@ -17,6 +17,7 @@ const GITHUB_NAME_SELECTOR_LIST = [
   '[data-testid="tree-view-item-name"]',
   '[aria-label$=", (Directory)"]',
   '[aria-label$=", (File)"]',
+  '.PRIVATE_TreeView-item-content',
   '.react-directory-filename-column a',
   'a[data-testid="view-all-files-file-link"]',
   '.react-directory-filename-cell a',
@@ -29,9 +30,9 @@ export const GITHUB_ICON_SELECTOR = 'svg[class*="octicon-file"]';
 
 const GITHUB_ENTRY_CONTAINER_SELECTOR = [
   '.react-directory-row',
-  '[role="treeitem"]',
+  '.PRIVATE_TreeView-item-container',
   '[data-testid="tree-view-item"]',
-  '.PRIVATE_TreeView-item-content',
+  '[role="treeitem"]',
   'tr.js-navigation-item',
   'li.js-navigation-item',
   'div[role="row"]',
