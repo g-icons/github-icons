@@ -3,7 +3,18 @@ import { browser } from 'wxt/browser';
 import type { PublicPath } from 'wxt/browser';
 import type { IconQuery, ResolvedIcon } from './types';
 
-const LANGUAGE_EXTENSION_ALIASES: Record<string, string> = {htm: 'html', yml: 'yaml'};
+const LANGUAGE_EXTENSION_ALIASES: Record<string, string> = {
+  htm: 'html',
+  yml: 'yaml',
+  js: 'javascript',
+  mjs: 'javascript',
+  cjs: 'javascript',
+  jsx: 'javascriptreact',
+  ts: 'typescript',
+  mts: 'typescript',
+  cts: 'typescript',
+  tsx: 'typescriptreact',
+};
 
 function normalizeLabel(value: string): string {
   return value.trim().replace(/\s*\/\s*/g, '/').replace(/\/+/g, '/');
