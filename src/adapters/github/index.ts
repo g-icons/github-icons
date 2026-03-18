@@ -77,6 +77,15 @@ export class GitHubAdapter implements SiteAdapter {
       return;
     }
 
+    // Remove orphaned replacement images in the same parent.
+    // In the sidebar, React swaps between closed/open folder SVGs — the old
+    // SVG is removed but our <img> replacement stays behind.
+    const parent = originalIcon.parentElement;
+    if (parent) {
+      parent.querySelectorAll<HTMLImageElement>(`img[${REPLACEMENT_ATTR}="true"]`)
+        .forEach((orphan) => orphan.remove());
+    }
+
     const replacement = this.createReplacementImage(originalIcon, iconUrl);
     originalIcon.insertAdjacentElement('afterend', replacement);
   }
