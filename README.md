@@ -19,7 +19,11 @@ Choose from six icon themes in the extension popup:
 
 ## Install
 
-The extension is currently under review by the Chrome Web Store. In the meantime, build and load it locally:
+[**Chrome Web Store**](https://chromewebstore.google.com/detail/github-icons/hjhebcpkgfacibbiohdccepipeekkjlj)
+
+Safari and Firefox versions should be available soon!
+
+Or build and load it locally:
 
 ```bash
 git clone https://github.com/g-icons/github-icons
