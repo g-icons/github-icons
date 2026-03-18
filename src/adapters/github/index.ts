@@ -72,6 +72,11 @@ export class GitHubAdapter implements SiteAdapter {
 
     originalIcon.style.display = 'none';
 
+    if (existingReplacement) {
+      existingReplacement.src = iconUrl;
+      return;
+    }
+
     // Clean up any orphaned replacement images in the same parent
     // (happens when GitHub swaps SVGs for open/closed folder states)
     const parent = originalIcon.parentElement;
@@ -79,11 +84,6 @@ export class GitHubAdapter implements SiteAdapter {
       parent
         .querySelectorAll<HTMLImageElement>(`img[${REPLACEMENT_ATTR}="true"]`)
         .forEach((orphan) => orphan.remove());
-    }
-
-    if (existingReplacement) {
-      existingReplacement.src = iconUrl;
-      return;
     }
 
     const replacement = this.createReplacementImage(originalIcon, iconUrl);

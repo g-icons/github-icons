@@ -33,7 +33,6 @@ const GITHUB_ENTRY_CONTAINER_SELECTOR = [
   '[role="treeitem"]',
   '[data-testid="tree-view-item"]',
   '.PRIVATE_TreeView-item-container',
-  '.PRIVATE_TreeView-item-content',
   'tr.js-navigation-item',
   'li.js-navigation-item',
   'div[role="row"]',
