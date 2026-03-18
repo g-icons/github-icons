@@ -17,5 +17,14 @@ export default defineConfig({
         matches: ['https://github.com/*'],
       },
     ],
+    browser_specific_settings: {
+      gecko: {
+        id: 'github-icons@githubicons.com',
+        data_collection_permissions: {
+          required: ['none'],
+          optional: [],
+        },
+      },
+    },
   },
 });

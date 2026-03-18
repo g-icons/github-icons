@@ -2,7 +2,7 @@
   "name": "chrome-github-icons",
   "description": "Cross-browser extension that replaces GitHub file icons with Material Design icons.",
   "private": true,
-  "version": "0.5.1",
+  "version": "0.6.0",
   "type": "module",
   "scripts": {
     "sync:assets": "tsx scripts/copy-icons.ts",
