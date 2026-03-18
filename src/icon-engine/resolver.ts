@@ -116,16 +116,13 @@ function resolveDirectoryCandidates(filename: string): string[] {
     return [];
   }
 
-  const candidates = new Set<string>([segments[0]!]);
+  const lastSegment = segments.at(-1)!;
 
-  if (segments.length > 1) {
-    candidates.add(normalizedName);
-    candidates.add(segments.at(-1)!);
-  } else {
-    candidates.add(normalizedName);
+  if (segments.length === 1) {
+    return [lastSegment];
   }
 
-  return [...candidates];
+  return [lastSegment, normalizedName];
 }
 
 function resolveDirectoryIconId(manifest: Manifest, filename: string, query: IconQuery): string | undefined {
