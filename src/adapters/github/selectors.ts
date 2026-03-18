@@ -30,9 +30,10 @@ export const GITHUB_ICON_SELECTOR = 'svg[class*="octicon-file"]';
 
 const GITHUB_ENTRY_CONTAINER_SELECTOR = [
   '.react-directory-row',
-  '.PRIVATE_TreeView-item-container',
-  '[data-testid="tree-view-item"]',
   '[role="treeitem"]',
+  '[data-testid="tree-view-item"]',
+  '.PRIVATE_TreeView-item-container',
+  '.PRIVATE_TreeView-item-content',
   'tr.js-navigation-item',
   'li.js-navigation-item',
   'div[role="row"]',
