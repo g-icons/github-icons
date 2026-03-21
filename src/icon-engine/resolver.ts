@@ -126,7 +126,9 @@ function resolveDirectoryCandidates(filename: string): string[] {
 }
 
 function resolveDirectoryIconId(manifest: Manifest, filename: string, query: IconQuery): string | undefined {
-  const folderNames = query.isRoot ? query.isOpen ? manifest.rootFolderNamesExpanded : manifest.rootFolderNames : query.isOpen ? manifest.folderNamesExpanded : manifest.folderNames;
+  const folderNames = query.isRoot
+    ? query.isOpen ? (manifest.rootFolderNamesExpanded ?? manifest.rootFolderNames) : manifest.rootFolderNames
+    : query.isOpen ? (manifest.folderNamesExpanded ?? manifest.folderNames) : manifest.folderNames;
   for (const candidate of resolveDirectoryCandidates(filename)) {
     const match = resolveExactMatch(folderNames, candidate);
     if (match) {
@@ -134,7 +136,11 @@ function resolveDirectoryIconId(manifest: Manifest, filename: string, query: Ico
     }
   }
 
-  return query.isRoot ? query.isOpen ? manifest.rootFolderExpanded : manifest.rootFolder : query.isOpen ? manifest.folderExpanded : manifest.folder;
+  if (query.isRoot) {
+    return query.isOpen ? (manifest.rootFolderExpanded ?? manifest.rootFolder) : manifest.rootFolder;
+  }
+
+  return query.isOpen ? (manifest.folderExpanded ?? manifest.folder) : manifest.folder;
 }
 
 function resolveFileIconId(manifest: Manifest, filename: string): string | undefined {
