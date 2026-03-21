@@ -83,3 +83,12 @@ jobs:
           oauth-client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
           oauth-refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
           publish-target: default
+
+      - name: Publish to Firefox Add-ons
+        run: |
+          npx web-ext sign \
+            --channel=listed \
+            --source-dir=output/firefox-mv2 \
+            --api-key=${{ secrets.AMO_JWT_ISSUER }} \
+            --api-secret=${{ secrets.AMO_JWT_SECRET }}
+        continue-on-error: true
