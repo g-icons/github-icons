@@ -1,0 +1,92 @@
+name: Bug Report
+description: Report a bug with GitHub Icons
+labels: [bug]
+body:
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Brave
+        - Arc
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: browser-version
+    attributes:
+      label: Browser version
+      placeholder: e.g. 124.0.6367.91
+    validations:
+      required: true
+
+  - type: input
+    id: extension-version
+    attributes:
+      label: Extension version
+      placeholder: e.g. 0.6.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: icon-theme
+    attributes:
+      label: Icon theme
+      description: Which icon theme were you using when the bug occurred?
+      options:
+        - All themes
+        - Material Design
+        - VS Code Icons
+        - Seti
+        - Symbols
+        - Catppuccin
+        - Great Icons
+    validations:
+      required: true
+
+  - type: dropdown
+    id: github-area
+    attributes:
+      label: GitHub area
+      description: Where on GitHub does the bug occur?
+      options:
+        - File tree (main view)
+        - Sidebar
+        - Pull request file list
+        - Search results
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened and what did you expect?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. See ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help illustrate the issue.
+    validations:
+      required: false

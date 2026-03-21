@@ -86,9 +86,11 @@ jobs:
 
       - name: Publish to Firefox Add-ons
         run: |
+          echo '{"version": {"license": "MIT"}}' > amo-metadata.json
           npx web-ext sign \
             --channel=listed \
             --source-dir=output/firefox-mv2 \
             --api-key=${{ secrets.AMO_JWT_ISSUER }} \
-            --api-secret=${{ secrets.AMO_JWT_SECRET }}
+            --api-secret=${{ secrets.AMO_JWT_SECRET }} \
+            --amo-metadata=amo-metadata.json
         continue-on-error: true
