@@ -58,7 +58,23 @@ export class GitHubAdapter implements SiteAdapter {
       },
     });
 
-    return () => observer.abort();
+    const upTreeObserver = observe('a[data-testid="up-tree"]', {
+      constructor: HTMLAnchorElement,
+      add: (link) => {
+        const svg = link.querySelector<SVGElement>('svg');
+        if (svg && !svg.hasAttribute(ORIGINAL_ICON_ATTR)) {
+          const entry = this.createParentDirectoryEntry(svg);
+          if (entry) {
+            callback([entry]);
+          }
+        }
+      },
+    });
+
+    return () => {
+      observer.abort();
+      upTreeObserver.abort();
+    };
   }
 
   replaceIcon(entry: FileEntry, iconUrl: string) {
@@ -134,6 +150,22 @@ export class GitHubAdapter implements SiteAdapter {
       type: getEntryTypeFromIcon(iconElement),
       iconElement,
       isOpen: isOpenFolderIcon(iconElement),
+    };
+  }
+
+  private createParentDirectoryEntry(iconElement: SVGElement): FileEntry | null {
+    const container = iconElement.closest<Element>('tr');
+    if (!container) {
+      return null;
+    }
+
+    return {
+      element: container,
+      filename: '..',
+      path: '..',
+      type: 'directory',
+      iconElement,
+      isOpen: false,
     };
   }
 
