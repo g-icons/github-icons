@@ -23,6 +23,8 @@ const GITHUB_NAME_SELECTOR_LIST = [
   '.react-directory-filename-cell a',
   'a.js-navigation-open',
   'a.Link--primary',
+  'a[href*="/tree/"]',
+  'a[href*="/blob/"]',
   '[title]',
 ] as const;
 
@@ -36,6 +38,8 @@ const GITHUB_ENTRY_CONTAINER_SELECTOR = [
   'tr.js-navigation-item',
   'li.js-navigation-item',
   'div[role="row"]',
+  'tr[id^="folder-row-"]',
+  'tr[id^="file-row-"]',
 ].join(', ');
 
 export function getEntryTypeFromIcon(iconElement: SVGElement): FileEntryType {
