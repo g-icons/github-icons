@@ -1,0 +1,94 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Deploy target"
+        required: true
+        type: choice
+        options:
+          - chrome
+          - firefox
+          - both
+      ref:
+        description: "Branch, tag, or commit SHA to deploy"
+        required: false
+        default: ""
+      chrome-publish-target:
+        description: "Chrome publish target (ignored for Firefox)"
+        required: false
+        type: choice
+        options:
+          - default
+          - trustedTesters
+        default: default
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "20"
+  ARTIFACT_PREFIX: "github-icons"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extract version
+        id: version
+        run: echo "version=$(node -p 'require("./package.json").version')" >> $GITHUB_OUTPUT
+
+      - name: Build & zip (Chrome)
+        if: inputs.target == 'chrome' || inputs.target == 'both'
+        run: npx wxt zip
+
+      - name: Build & zip (Firefox)
+        if: inputs.target == 'firefox' || inputs.target == 'both'
+        run: npx wxt zip -b firefox
+
+      - name: Rename artifacts
+        run: |
+          cd output
+          mv *-chrome.zip "${{ env.ARTIFACT_PREFIX }}-${{ steps.version.outputs.version }}-chrome.zip" 2>/dev/null || true
+          mv *-firefox.zip "${{ env.ARTIFACT_PREFIX }}-${{ steps.version.outputs.version }}-firefox.zip" 2>/dev/null || true
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTIFACT_PREFIX }}-${{ steps.version.outputs.version }}
+          path: output/*.zip
+
+      - name: Publish to Chrome Web Store
+        if: inputs.target == 'chrome' || inputs.target == 'both'
+        uses: browser-actions/release-chrome-extension@v0
+        with:
+          extension-id: ${{ secrets.CWS_EXTENSION_ID }}
+          extension-path: output/${{ env.ARTIFACT_PREFIX }}-${{ steps.version.outputs.version }}-chrome.zip
+          oauth-client-id: ${{ secrets.CWS_CLIENT_ID }}
+          oauth-client-secret: ${{ secrets.CWS_CLIENT_SECRET }}
+          oauth-refresh-token: ${{ secrets.CWS_REFRESH_TOKEN }}
+          publish-target: ${{ inputs.chrome-publish-target }}
+
+      - name: Publish to Firefox Add-ons
+        if: inputs.target == 'firefox' || inputs.target == 'both'
+        run: |
+          echo '{"version": {"license": "MIT"}}' > amo-metadata.json
+          npx web-ext sign \
+            --channel=listed \
+            --source-dir=output/firefox-mv2 \
+            --api-key=${{ secrets.AMO_JWT_ISSUER }} \
+            --api-secret=${{ secrets.AMO_JWT_SECRET }} \
+            --amo-metadata=amo-metadata.json
