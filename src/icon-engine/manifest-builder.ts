@@ -24,6 +24,7 @@ export const ALL_THEME_PACKS: readonly ThemePackId[] = [
   'catppuccin',
   'great-icons',
   'mizu',
+  'icons-maintained',
 ];
 
 function normalizeIconPath(iconPath: string): string {
@@ -741,13 +742,37 @@ function buildPrefixedPathManifest(
     iconSources.set(prefixed, path.resolve(themeDir, def.iconPath));
   }
 
+  const resolveDefaultIconId = (
+    primary: string | undefined,
+    fallback?: string,
+  ): string | undefined => {
+    if (primary && iconDefinitions[primary]) {
+      return primary;
+    }
+
+    if (fallback && iconDefinitions[fallback]) {
+      return fallback;
+    }
+
+    return primary ?? fallback;
+  };
+
+  const file = resolveDefaultIconId(raw.file);
+  const folder = resolveDefaultIconId(raw.folder);
+  const folderExpanded = resolveDefaultIconId(raw.folderExpanded, folder);
+  const rootFolder = resolveDefaultIconId(raw.rootFolder, folder);
+  const rootFolderExpanded = resolveDefaultIconId(
+    raw.rootFolderExpanded,
+    folderExpanded ?? rootFolder ?? folder,
+  );
+
   const manifest: Manifest = {
     iconDefinitions,
-    file: raw.file,
-    folder: raw.folder,
-    folderExpanded: raw.folderExpanded,
-    rootFolder: raw.rootFolder,
-    rootFolderExpanded: raw.rootFolderExpanded,
+    file,
+    folder,
+    folderExpanded,
+    rootFolder,
+    rootFolderExpanded,
     folderNames: raw.folderNames ?? {},
     folderNamesExpanded: raw.folderNamesExpanded ?? {},
     fileExtensions: raw.fileExtensions,
@@ -777,4 +802,10 @@ export function buildGreatIconsManifest(themeJsonPath: string): { manifest: Mani
 
 export function buildMizuManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
   return buildPrefixedPathManifest(themeJsonPath, 'mizu');
+}
+
+// --- Icons - Maintained ---
+
+export function buildIconsMaintainedManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
+  return buildPrefixedPathManifest(themeJsonPath, 'iconsmaintained');
 }

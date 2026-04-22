@@ -6,7 +6,7 @@ Learn more at [githubicons.com](https://githubicons.com/).
 
 ## Icon Themes
 
-Choose from seven icon themes in the extension popup:
+Choose from eight icon themes in the extension popup:
 
 | Theme | Icons | Source |
 |-------|-------|--------|
@@ -17,6 +17,7 @@ Choose from seven icon themes in the extension popup:
 | **Catppuccin** | 650+ | [catppuccin/vscode-icons](https://github.com/catppuccin/vscode-icons) |
 | **Great Icons** | 290+ | [vscode-great-icons](https://github.com/EmmanuelBeziat/vscode-great-icons) |
 | **Mizu Icons** | 700+ | [cdfzo/mizu](https://codeberg.org/cdfzo/mizu) |
+| **Icons - Maintained** | 750+ | [yusifaliyevpro/vscode-icons](https://github.com/yusifaliyevpro/vscode-icons) |
 
 ## Install
 
