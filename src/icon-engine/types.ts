@@ -9,7 +9,8 @@ export type ThemeId =
   | 'symbols'
   | 'catppuccin'
   | 'great-icons'
-  | 'mizu';
+  | 'mizu'
+  | 'icons-maintained';
 
 export type MaterialPackId = 'default' | Exclude<IconPackValue, ''>;
 
@@ -20,7 +21,8 @@ export type ThemePackId =
   | 'symbols'
   | 'catppuccin'
   | 'great-icons'
-  | 'mizu';
+  | 'mizu'
+  | 'icons-maintained';
 
 export interface IconQuery {
   filename: string;
