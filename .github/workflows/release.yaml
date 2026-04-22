@@ -86,7 +86,7 @@ jobs:
 
       - name: Publish to Firefox Add-ons
         run: |
-          echo '{"version": {"license": "MIT"}}' > amo-metadata.json
+          echo '{"version": {"license": "MIT"}, "categories": ["other"]}' > amo-metadata.json
           npx web-ext sign \
             --channel=listed \
             --source-dir=output/firefox-mv2 \

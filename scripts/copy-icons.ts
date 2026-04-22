@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, buildCatppuccinManifest, buildGreatIconsManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
+import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, buildCatppuccinManifest, buildGreatIconsManifest, buildMizuManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
 import type { Manifest } from 'material-icon-theme';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -23,6 +23,7 @@ const symbolsThemeJsonPath = resolve(projectRoot, 'node_modules/vscode-symbols/s
 const catppuccinThemeJsonPath = resolve(projectRoot, 'src/data/catppuccin-theme.json');
 const catppuccinIconifyJsonPath = resolve(projectRoot, 'node_modules/@iconify-json/catppuccin/icons.json');
 const greatIconsThemeJsonPath = resolve(projectRoot, 'src/data/great-icons/icons.json');
+const mizuThemeJsonPath = resolve(projectRoot, 'src/data/mizu/icon-theme.json');
 
 interface IconifyData {
   prefix: string;
@@ -181,6 +182,7 @@ async function main() {
   const { manifest: symbolsManifest, iconSources: symbolsSources } = buildSymbolsManifest(symbolsThemeJsonPath);
   const { manifest: catppuccinManifest, svgFilenames: catppuccinSvgFilenames } = buildCatppuccinManifest(catppuccinThemeJsonPath);
   const { manifest: greatIconsManifest, iconSources: greatIconsSources } = buildGreatIconsManifest(greatIconsThemeJsonPath);
+  const { manifest: mizuManifest, iconSources: mizuSources } = buildMizuManifest(mizuThemeJsonPath);
   const allManifests: Record<string, Manifest> = {
     ...materialManifests,
     'vscode-icons': vscodeIconsManifest,
@@ -188,6 +190,7 @@ async function main() {
     symbols: symbolsManifest as Manifest,
     catppuccin: catppuccinManifest as Manifest,
     'great-icons': greatIconsManifest as Manifest,
+    mizu: mizuManifest as Manifest,
   };
 
   assertAllIconsReachable(allManifests);
@@ -209,6 +212,11 @@ async function main() {
   await extractCatppuccinSvgs(catppuccinSvgFilenames);
   await Promise.all(
     [...greatIconsSources.entries()].map(([prefixedName, sourcePath]) =>
+      copyFile(sourcePath, resolve(iconsTargetDir, prefixedName)),
+    ),
+  );
+  await Promise.all(
+    [...mizuSources.entries()].map(([prefixedName, sourcePath]) =>
       copyFile(sourcePath, resolve(iconsTargetDir, prefixedName)),
     ),
   );

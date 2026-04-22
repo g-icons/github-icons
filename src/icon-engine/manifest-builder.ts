@@ -23,10 +23,11 @@ export const ALL_THEME_PACKS: readonly ThemePackId[] = [
   'symbols',
   'catppuccin',
   'great-icons',
+  'mizu',
 ];
 
 function normalizeIconPath(iconPath: string): string {
-  return `/icons/${path.posix.basename(iconPath)}`;
+  return `icons/${path.posix.basename(iconPath)}`;
 }
 
 function normalizeManifest(manifest: Manifest): Manifest {
@@ -548,7 +549,7 @@ export function buildSetiManifest(definitionsPath: string, iconsPath: string): {
     const id = setiIconId(icon, color);
     if (!usedCombos.has(id)) {
       usedCombos.add(id);
-      iconDefinitions[id] = { iconPath: `/icons/${setiSvgFilename(icon, color)}` };
+      iconDefinitions[id] = { iconPath: `icons/${setiSvgFilename(icon, color)}` };
     }
     return id;
   }
@@ -623,7 +624,7 @@ export function buildSymbolsManifest(themeJsonPath: string): { manifest: Manifes
     const trimmedPath = def.iconPath.trim();
     const originalBasename = path.posix.basename(trimmedPath);
     const prefixedName = `symbols_${originalBasename}`;
-    iconDefinitions[id] = { iconPath: `/icons/${prefixedName}` };
+    iconDefinitions[id] = { iconPath: `icons/${prefixedName}` };
     iconSources.set(prefixedName, path.resolve(themeDir, trimmedPath));
   }
 
@@ -678,7 +679,7 @@ export function buildCatppuccinManifest(themeJsonPath: string): { manifest: Mani
   for (const [id, def] of Object.entries(raw.iconDefinitions)) {
     const basename = path.posix.basename(def.iconPath);
     const prefixed = `catppuccin_${basename}`;
-    iconDefinitions[id] = { iconPath: `/icons/${prefixed}` };
+    iconDefinitions[id] = { iconPath: `icons/${prefixed}` };
     svgFilenames.push(basename);
   }
 
@@ -709,10 +710,25 @@ export function buildCatppuccinManifest(themeJsonPath: string): { manifest: Mani
   return { manifest, svgFilenames: filteredFilenames };
 }
 
-// --- Great Icons ---
+interface PathThemeRawManifest {
+  iconDefinitions: Record<string, { iconPath: string }>;
+  file: string;
+  folder: string;
+  folderExpanded?: string;
+  rootFolder?: string;
+  rootFolderExpanded?: string;
+  fileExtensions: Record<string, string>;
+  fileNames: Record<string, string>;
+  languageIds?: Record<string, string>;
+  folderNames?: Record<string, string>;
+  folderNamesExpanded?: Record<string, string>;
+}
 
-export function buildGreatIconsManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
-  const raw: CatppuccinRawManifest = JSON.parse(readFileSync(themeJsonPath, 'utf-8'));
+function buildPrefixedPathManifest(
+  themeJsonPath: string,
+  prefix: string,
+): { manifest: Manifest; iconSources: Map<string, string> } {
+  const raw: PathThemeRawManifest = JSON.parse(readFileSync(themeJsonPath, 'utf-8'));
   const themeDir = path.dirname(themeJsonPath);
 
   const iconDefinitions: Record<string, { iconPath: string }> = {};
@@ -720,8 +736,8 @@ export function buildGreatIconsManifest(themeJsonPath: string): { manifest: Mani
 
   for (const [id, def] of Object.entries(raw.iconDefinitions)) {
     const basename = path.posix.basename(def.iconPath);
-    const prefixed = `greaticons_${basename}`;
-    iconDefinitions[id] = { iconPath: `/icons/${prefixed}` };
+    const prefixed = `${prefix}_${basename}`;
+    iconDefinitions[id] = { iconPath: `icons/${prefixed}` };
     iconSources.set(prefixed, path.resolve(themeDir, def.iconPath));
   }
 
@@ -743,10 +759,22 @@ export function buildGreatIconsManifest(themeJsonPath: string): { manifest: Mani
   for (const id of Object.keys(iconDefinitions)) {
     if (!referenced.has(id)) {
       delete iconDefinitions[id];
-      const prefixed = `greaticons_${path.posix.basename(raw.iconDefinitions[id].iconPath)}`;
+      const prefixed = `${prefix}_${path.posix.basename(raw.iconDefinitions[id].iconPath)}`;
       iconSources.delete(prefixed);
     }
   }
 
   return { manifest, iconSources };
+}
+
+// --- Great Icons ---
+
+export function buildGreatIconsManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
+  return buildPrefixedPathManifest(themeJsonPath, 'greaticons');
+}
+
+// --- Mizu ---
+
+export function buildMizuManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
+  return buildPrefixedPathManifest(themeJsonPath, 'mizu');
 }
