@@ -39,7 +39,8 @@ function resolveIconById(manifest: Manifest, iconId: string | undefined): Resolv
     return null;
   }
 
-  return {iconId, iconPath: definition.iconPath, url: browser.runtime.getURL(definition.iconPath as PublicPath)};
+  const iconPath = definition.iconPath.replace(/^\/+/, '');
+  return {iconId, iconPath, url: browser.runtime.getURL(iconPath as PublicPath)};
 }
 
 function getEffectiveManifest(manifest: Manifest, preferLight: boolean | undefined): Manifest {
@@ -126,18 +127,33 @@ function resolveDirectoryCandidates(filename: string): string[] {
 }
 
 function resolveDirectoryIconId(manifest: Manifest, filename: string, query: IconQuery): string | undefined {
-  const folderNames = query.isRoot
-    ? query.isOpen ? (manifest.rootFolderNamesExpanded ?? manifest.rootFolderNames) : manifest.rootFolderNames
-    : query.isOpen ? (manifest.folderNamesExpanded ?? manifest.folderNames) : manifest.folderNames;
+  if (query.isRoot) {
+    const rootFolderNames = query.isOpen
+      ? (manifest.rootFolderNamesExpanded ?? manifest.rootFolderNames)
+      : manifest.rootFolderNames;
+    for (const candidate of resolveDirectoryCandidates(filename)) {
+      const match = resolveExactMatch(rootFolderNames, candidate);
+      if (match) {
+        return match;
+      }
+    }
+
+    const rootIcon = query.isOpen
+      ? (manifest.rootFolderExpanded ?? manifest.rootFolder)
+      : manifest.rootFolder;
+    if (rootIcon) {
+      return rootIcon;
+    }
+  }
+
+  const folderNames = query.isOpen
+    ? (manifest.folderNamesExpanded ?? manifest.folderNames)
+    : manifest.folderNames;
   for (const candidate of resolveDirectoryCandidates(filename)) {
     const match = resolveExactMatch(folderNames, candidate);
     if (match) {
       return match;
     }
-  }
-
-  if (query.isRoot) {
-    return query.isOpen ? (manifest.rootFolderExpanded ?? manifest.rootFolder) : manifest.rootFolder;
   }
 
   return query.isOpen ? (manifest.folderExpanded ?? manifest.folder) : manifest.folder;
