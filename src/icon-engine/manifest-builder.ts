@@ -25,6 +25,7 @@ export const ALL_THEME_PACKS: readonly ThemePackId[] = [
   'great-icons',
   'mizu',
   'icons-maintained',
+  'jetbrains',
 ];
 
 function normalizeIconPath(iconPath: string): string {
@@ -808,4 +809,10 @@ export function buildMizuManifest(themeJsonPath: string): { manifest: Manifest; 
 
 export function buildIconsMaintainedManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
   return buildPrefixedPathManifest(themeJsonPath, 'iconsmaintained');
+}
+
+// --- JetBrains ---
+
+export function buildJetBrainsManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
+  return buildPrefixedPathManifest(themeJsonPath, 'jetbrains');
 }

@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, buildCatppuccinManifest, buildGreatIconsManifest, buildMizuManifest, buildIconsMaintainedManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
+import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, buildCatppuccinManifest, buildGreatIconsManifest, buildMizuManifest, buildIconsMaintainedManifest, buildJetBrainsManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
 import type { Manifest } from 'material-icon-theme';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -25,6 +25,7 @@ const catppuccinIconifyJsonPath = resolve(projectRoot, 'node_modules/@iconify-js
 const greatIconsThemeJsonPath = resolve(projectRoot, 'src/data/great-icons/icons.json');
 const mizuThemeJsonPath = resolve(projectRoot, 'src/data/mizu/icon-theme.json');
 const iconsMaintainedThemeJsonPath = resolve(projectRoot, 'src/data/icons-maintained/icons.json');
+const jetbrainsThemeJsonPath = resolve(projectRoot, 'src/data/jetbrains/theme-dark.json');
 
 interface IconifyData {
   prefix: string;
@@ -185,6 +186,7 @@ async function main() {
   const { manifest: greatIconsManifest, iconSources: greatIconsSources } = buildGreatIconsManifest(greatIconsThemeJsonPath);
   const { manifest: mizuManifest, iconSources: mizuSources } = buildMizuManifest(mizuThemeJsonPath);
   const { manifest: iconsMaintainedManifest, iconSources: iconsMaintainedSources } = buildIconsMaintainedManifest(iconsMaintainedThemeJsonPath);
+  const { manifest: jetbrainsManifest, iconSources: jetbrainsSources } = buildJetBrainsManifest(jetbrainsThemeJsonPath);
   const allManifests: Record<string, Manifest> = {
     ...materialManifests,
     'vscode-icons': vscodeIconsManifest,
@@ -194,6 +196,7 @@ async function main() {
     'great-icons': greatIconsManifest as Manifest,
     mizu: mizuManifest as Manifest,
     'icons-maintained': iconsMaintainedManifest as Manifest,
+    jetbrains: jetbrainsManifest as Manifest,
   };
 
   assertAllIconsReachable(allManifests);
@@ -225,6 +228,11 @@ async function main() {
   );
   await Promise.all(
     [...iconsMaintainedSources.entries()].map(([prefixedName, sourcePath]) =>
+      copyFile(sourcePath, resolve(iconsTargetDir, prefixedName)),
+    ),
+  );
+  await Promise.all(
+    [...jetbrainsSources.entries()].map(([prefixedName, sourcePath]) =>
       copyFile(sourcePath, resolve(iconsTargetDir, prefixedName)),
     ),
   );

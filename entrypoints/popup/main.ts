@@ -12,6 +12,7 @@ const TOP_LEVEL_THEMES: { value: ThemeId; label: string }[] = [
   { value: 'great-icons', label: 'Great Icons' },
   { value: 'mizu', label: 'Mizu Icons' },
   { value: 'icons-maintained', label: 'Icons - Maintained' },
+  { value: 'jetbrains', label: 'JetBrains' },
 ];
 
 const MATERIAL_SUB_PACKS: { value: MaterialPackId; label: string }[] = [
@@ -36,6 +37,7 @@ const STANDALONE_THEMES: Set<string> = new Set([
   'great-icons',
   'mizu',
   'icons-maintained',
+  'jetbrains',
 ]);
 
 function packToTheme(pack: ThemePackId): ThemeId {
