@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, buildCatppuccinManifest, buildGreatIconsManifest, buildMizuManifest, buildIconsMaintainedManifest, buildJetBrainsManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
+import { buildMaterialThemeManifests, buildVscodeIconsManifest, buildSetiManifest, buildSymbolsManifest, buildCatppuccinManifest, buildGreatIconsManifest, buildMizuManifest, buildIconsMaintainedManifest, buildJetBrainsManifest, buildCharmedManifest, ALL_THEME_PACKS } from '../src/icon-engine/manifest-builder';
+import type { CharmedVariant } from '../src/icon-engine/manifest-builder';
 import type { Manifest } from 'material-icon-theme';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
@@ -26,6 +27,12 @@ const greatIconsThemeJsonPath = resolve(projectRoot, 'src/data/great-icons/icons
 const mizuThemeJsonPath = resolve(projectRoot, 'src/data/mizu/icon-theme.json');
 const iconsMaintainedThemeJsonPath = resolve(projectRoot, 'src/data/icons-maintained/icons.json');
 const jetbrainsThemeJsonPath = resolve(projectRoot, 'src/data/jetbrains/theme-dark.json');
+const charmedVariants: { pack: string; variant: CharmedVariant; dir: string }[] = [
+  { pack: 'charmed', variant: 'base', dir: 'base' },
+  { pack: 'charmed-light', variant: 'light', dir: 'light' },
+  { pack: 'charmed-soft', variant: 'soft', dir: 'soft' },
+  { pack: 'charmed-warm', variant: 'warm', dir: 'warm' },
+];
 
 interface IconifyData {
   prefix: string;
@@ -187,6 +194,10 @@ async function main() {
   const { manifest: mizuManifest, iconSources: mizuSources } = buildMizuManifest(mizuThemeJsonPath);
   const { manifest: iconsMaintainedManifest, iconSources: iconsMaintainedSources } = buildIconsMaintainedManifest(iconsMaintainedThemeJsonPath);
   const { manifest: jetbrainsManifest, iconSources: jetbrainsSources } = buildJetBrainsManifest(jetbrainsThemeJsonPath);
+  const charmedBuilds = charmedVariants.map(({ pack, variant, dir }) => ({
+    pack,
+    ...buildCharmedManifest(resolve(projectRoot, `src/data/charmed/${dir}/theme.json`), variant),
+  }));
   const allManifests: Record<string, Manifest> = {
     ...materialManifests,
     'vscode-icons': vscodeIconsManifest,
@@ -197,6 +208,7 @@ async function main() {
     mizu: mizuManifest as Manifest,
     'icons-maintained': iconsMaintainedManifest as Manifest,
     jetbrains: jetbrainsManifest as Manifest,
+    ...Object.fromEntries(charmedBuilds.map(({ pack, manifest }) => [pack, manifest as Manifest])),
   };
 
   assertAllIconsReachable(allManifests);
@@ -234,6 +246,13 @@ async function main() {
   await Promise.all(
     [...jetbrainsSources.entries()].map(([prefixedName, sourcePath]) =>
       copyFile(sourcePath, resolve(iconsTargetDir, prefixedName)),
+    ),
+  );
+  await Promise.all(
+    charmedBuilds.flatMap(({ iconSources }) =>
+      [...iconSources.entries()].map(([prefixedName, sourcePath]) =>
+        copyFile(sourcePath, resolve(iconsTargetDir, prefixedName)),
+      ),
     ),
   );
 

@@ -6,7 +6,7 @@ Learn more at [githubicons.com](https://githubicons.com/).
 
 ## Icon Themes
 
-Choose from nine icon themes in the extension popup:
+Choose from ten icon themes in the extension popup:
 
 | Theme | Icons | Source |
 |-------|-------|--------|
@@ -19,6 +19,7 @@ Choose from nine icon themes in the extension popup:
 | **Mizu Icons** | 700+ | [cdfzo/mizu](https://codeberg.org/cdfzo/mizu) |
 | **Icons - Maintained** | 750+ | [yusifaliyevpro/vscode-icons](https://github.com/yusifaliyevpro/vscode-icons) |
 | **JetBrains** | 90+ | [ardonplay/vscode-jetbrains-icon-theme](https://github.com/ardonplay/vscode-jetbrains-icon-theme) |
+| **Charmed** | 240+ × 4 variants (Base, Light, Soft, Warm) | [littensy/charmed-icons](https://github.com/littensy/charmed-icons) |
 
 ## Install
 

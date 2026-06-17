@@ -1,7 +1,7 @@
 import './style.css';
 
 import { activeIconPack, extensionEnabled } from '../../src/storage/settings';
-import type { MaterialPackId, ThemeId, ThemePackId } from '../../src/icon-engine/types';
+import type { CharmedPackId, MaterialPackId, ThemeId, ThemePackId } from '../../src/icon-engine/types';
 
 const TOP_LEVEL_THEMES: { value: ThemeId; label: string }[] = [
   { value: 'material', label: 'Material Icon Theme' },
@@ -13,6 +13,7 @@ const TOP_LEVEL_THEMES: { value: ThemeId; label: string }[] = [
   { value: 'mizu', label: 'Mizu Icons' },
   { value: 'icons-maintained', label: 'Icons - Maintained' },
   { value: 'jetbrains', label: 'JetBrains' },
+  { value: 'charmed', label: 'Charmed' },
 ];
 
 const MATERIAL_SUB_PACKS: { value: MaterialPackId; label: string }[] = [
@@ -29,6 +30,21 @@ const MATERIAL_SUB_PACKS: { value: MaterialPackId; label: string }[] = [
   { value: 'bashly', label: 'Bashly' },
 ];
 
+const CHARMED_SUB_PACKS: { value: CharmedPackId; label: string }[] = [
+  { value: 'charmed', label: 'Base' },
+  { value: 'charmed-light', label: 'Light' },
+  { value: 'charmed-soft', label: 'Soft' },
+  { value: 'charmed-warm', label: 'Warm' },
+];
+
+// Themes whose variants are selected via the secondary "Variant" dropdown.
+// The first sub-pack is the default the theme falls back to.
+const SUB_PACKS: Partial<Record<ThemeId, { value: ThemePackId; label: string }[]>> = {
+  material: MATERIAL_SUB_PACKS,
+  charmed: CHARMED_SUB_PACKS,
+};
+
+// Themes that map 1:1 to a single pack (no variant dropdown).
 const STANDALONE_THEMES: Set<string> = new Set([
   'vscode-icons',
   'seti',
@@ -42,11 +58,19 @@ const STANDALONE_THEMES: Set<string> = new Set([
 
 function packToTheme(pack: ThemePackId): ThemeId {
   if (STANDALONE_THEMES.has(pack)) return pack as ThemeId;
+  for (const [theme, packs] of Object.entries(SUB_PACKS)) {
+    if (packs?.some((p) => p.value === pack)) return theme as ThemeId;
+  }
   return 'material';
 }
 
+function subPackOptionsFor(theme: ThemeId): string {
+  const packs = SUB_PACKS[theme] ?? [];
+  return packs.map((p) => `<option value="${p.value}">${p.label}</option>`).join('');
+}
+
 const themeOptions = TOP_LEVEL_THEMES.map((t) => `<option value="${t.value}">${t.label}</option>`).join('');
-const subPackOptions = MATERIAL_SUB_PACKS.map((p) => `<option value="${p.value}">${p.label}</option>`).join('');
+const subPackOptions = subPackOptionsFor('material');
 
 const app = document.querySelector<HTMLDivElement>('#app');
 
@@ -94,17 +118,21 @@ const themeSelect = document.querySelector<HTMLSelectElement>('#theme-select')!;
 const subPackSelect = document.querySelector<HTMLSelectElement>('#sub-pack-select')!;
 const subPackRow = document.querySelector<HTMLDivElement>('#sub-pack-row')!;
 
-function updateSubPackVisibility(theme: ThemeId) {
-  subPackRow.classList.toggle('hidden', theme !== 'material');
+function syncSubPackOptions(theme: ThemeId) {
+  const hasSubPacks = Boolean(SUB_PACKS[theme]);
+  subPackRow.classList.toggle('hidden', !hasSubPacks);
+  if (hasSubPacks) {
+    subPackSelect.innerHTML = subPackOptionsFor(theme);
+  }
 }
 
 function renderPack(pack: ThemePackId) {
   const theme = packToTheme(pack);
   themeSelect.value = theme;
-  if (theme === 'material') {
+  syncSubPackOptions(theme);
+  if (SUB_PACKS[theme]) {
     subPackSelect.value = pack;
   }
-  updateSubPackVisibility(theme);
 }
 
 async function bootstrap() {
@@ -122,8 +150,12 @@ enabledToggle.addEventListener('change', async () => {
 
 themeSelect.addEventListener('change', async () => {
   const theme = themeSelect.value as ThemeId;
-  updateSubPackVisibility(theme);
-  const pack: ThemePackId = theme === 'material' ? subPackSelect.value as MaterialPackId : theme;
+  syncSubPackOptions(theme);
+  const subPacks = SUB_PACKS[theme];
+  const pack: ThemePackId = subPacks ? subPacks[0].value : (theme as ThemePackId);
+  if (subPacks) {
+    subPackSelect.value = pack;
+  }
   themeSelect.disabled = true;
   await activeIconPack.setValue(pack);
   themeSelect.disabled = false;

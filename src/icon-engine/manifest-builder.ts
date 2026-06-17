@@ -26,6 +26,10 @@ export const ALL_THEME_PACKS: readonly ThemePackId[] = [
   'mizu',
   'icons-maintained',
   'jetbrains',
+  'charmed',
+  'charmed-light',
+  'charmed-soft',
+  'charmed-warm',
 ];
 
 function normalizeIconPath(iconPath: string): string {
@@ -815,4 +819,18 @@ export function buildIconsMaintainedManifest(themeJsonPath: string): { manifest:
 
 export function buildJetBrainsManifest(themeJsonPath: string): { manifest: Manifest; iconSources: Map<string, string> } {
   return buildPrefixedPathManifest(themeJsonPath, 'jetbrains');
+}
+
+// --- Charmed ---
+
+export type CharmedVariant = 'base' | 'light' | 'soft' | 'warm';
+
+export function buildCharmedManifest(
+  themeJsonPath: string,
+  variant: CharmedVariant,
+): { manifest: Manifest; iconSources: Map<string, string> } {
+  // Each variant ships its own recolored SVGs that share basenames across
+  // variants, so the prefix must be variant-specific to avoid collisions in
+  // the flat public/icons directory.
+  return buildPrefixedPathManifest(themeJsonPath, `charmed${variant}`);
 }
