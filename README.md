@@ -1,4 +1,4 @@
-# GitHub Icons
+# GitIcons
 
 A browser extension that replaces GitHub's generic file and folder icons with distinct, colorful glyphs — so your repo tree is readable at a glance.
 

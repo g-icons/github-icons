@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Automatic version bumping script for chrome-github-icons.
+Automatic version bumping script for GitIcons.
 Bumps version in package.json based on commit message prefix.
 
 Usage:
