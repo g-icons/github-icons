@@ -11,9 +11,16 @@ export type ThemeId =
   | 'great-icons'
   | 'mizu'
   | 'icons-maintained'
-  | 'jetbrains';
+  | 'jetbrains'
+  | 'charmed';
 
 export type MaterialPackId = 'default' | Exclude<IconPackValue, ''>;
+
+export type CharmedPackId =
+  | 'charmed'
+  | 'charmed-light'
+  | 'charmed-soft'
+  | 'charmed-warm';
 
 export type ThemePackId =
   | MaterialPackId
@@ -24,7 +31,8 @@ export type ThemePackId =
   | 'great-icons'
   | 'mizu'
   | 'icons-maintained'
-  | 'jetbrains';
+  | 'jetbrains'
+  | CharmedPackId;
 
 export interface IconQuery {
   filename: string;
