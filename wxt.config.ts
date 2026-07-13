@@ -3,13 +3,13 @@ import { defineConfig } from 'wxt';
 export default defineConfig({
   outDir: 'output',
   manifest: {
-    name: 'GitHub Icons',
+    name: 'GitIcons',
     description:
       'Replace GitHub file and folder icons with distinct, colorful glyphs.',
     permissions: ['storage'],
     host_permissions: ['https://github.com/*'],
     action: {
-      default_title: 'GitHub Icons',
+      default_title: 'GitIcons',
     },
     web_accessible_resources: [
       {
